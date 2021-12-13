@@ -5,14 +5,14 @@ export class Point {
   y: number;
   size: number;
   isSelected: boolean;
-  isDragging: boolean;
   constructor(_x: number, _y: number) {
     this.x = _x;
     this.y = _y;
     this.size = 10;
     this.isSelected = false;
   }
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, height: number) {
+    const y = height - this.y;
     if (this.isSelected) {
       ctx.fillStyle = "red";
     } else {
@@ -20,7 +20,7 @@ export class Point {
     }
     ctx.fillRect(
       this.x - this.size / 2,
-      this.y - this.size / 2,
+      y - this.size / 2,
       this.size,
       this.size
     );
@@ -31,13 +31,6 @@ export class Point {
   unselect() {
     this.isSelected = false;
   }
-  dragStart() {
-    this.isDragging = true;
-  }
-  dragEnd() {
-    this.isDragging = false;
-  }
-
   move(_x: number, _y: number) {
     this.x = _x;
     this.y = _y;
@@ -65,23 +58,23 @@ export class Plot {
     this.ys = _ys;
   }
 
-  draw(t: number) {
+  draw() {
     this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
     this.drawLines(this.ps.length, this.xs, this.ys);
     this.drawPoints();
-    requestAnimationFrame((time) => this.draw(time));
-  }
-  drawPoints() {
-    this.ps.forEach((e) => {
-      e.draw(this.ctx);
-    });
   }
 
+  drawPoints() {
+    this.ps.forEach((e) => {
+      e.draw(this.ctx, this.canvas.clientHeight);
+    });
+  }
   drawLines(num: number, xs: SplineAxis, ys: SplineAxis) {
+    const h = this.canvas.clientHeight;
     this.ctx.beginPath();
-    this.ctx.moveTo(xs.culc(0), ys.culc(0));
-    for (let t = 0.02; t <= num; t += 0.02) {
-      this.ctx.lineTo(xs.culc(t), ys.culc(t));
+    this.ctx.moveTo(xs.culc(0), h - ys.culc(0));
+    for (let t = 0.02; t <= num - 1; t += 0.02) {
+      this.ctx.lineTo(xs.culc(t), h - ys.culc(t));
     }
     this.ctx.stroke();
   }
@@ -101,7 +94,7 @@ export class Plot {
     const offsetX = canvas.getBoundingClientRect().left;
     const offsetY = canvas.getBoundingClientRect().top;
     const x = e.clientX - offsetX;
-    const y = e.clientY - offsetY;
+    const y = canvas.clientHeight - e.clientY + offsetY;
 
     this.ps.forEach((e) => e.unselect());
 
@@ -117,7 +110,7 @@ export class Plot {
     const offsetX = canvas.getBoundingClientRect().left;
     const offsetY = canvas.getBoundingClientRect().top;
     const x = e.clientX - offsetX;
-    const y = e.clientY - offsetY;
+    const y = canvas.clientHeight - e.clientY + offsetY;
 
     if (this.draggingId >= 0) {
       this.ps[this.draggingId].move(x, y);
@@ -152,6 +145,5 @@ export class Plot {
 
   mouseLeave() {
     this.draggingId = -1;
-    console.log(this.draggingId);
   }
 }
