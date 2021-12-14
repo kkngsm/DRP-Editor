@@ -1,6 +1,6 @@
 "use strict";
-
-import { Plot, Point } from "./point.js";
+import Plot from "./plot.js";
+import Point from "./point.js";
 import SplineAxis from "./spline.js";
 
 window.onload = () => {
