@@ -1,7 +1,7 @@
 "use strict";
 import Plot from "./plot.js";
-import Point from "./point.js";
-import SplineAxis from "./spline.js";
+import { Points } from "./point.js";
+import { Spline2D } from "./spline.js";
 
 window.onload = () => {
   const canvas = <HTMLCanvasElement>document.getElementById("graph");
@@ -9,24 +9,23 @@ window.onload = () => {
 
   const xs: number[] = [0, 100, 200, 300, 400, 500];
   const ys: number[] = xs.map((e) => gaussian(1, 0, e * 0.01) * 100); //[10, 20, 30, 50, 70, 40, 30, 20, 50];
-  const ps = xs.map((e, i) => new Point(e, ys[i]));
 
   const plot = new Plot(
-    ps,
     canvas,
     ctx,
-    new SplineAxis(xs),
-    new SplineAxis(ys)
+    Points.create(xs, ys),
+    Spline2D.create(xs, ys)
   );
+
   draw(0);
   function draw(t: number) {
     plot.draw();
     drawGaussian(1, 0);
     requestAnimationFrame((time) => draw(time));
   }
-  canvas.addEventListener("mousedown", (e) => plot.onDown(e, canvas));
+  canvas.addEventListener("mousedown", (e) => plot.onDown(e));
   canvas.addEventListener("mouseup", () => plot.onUp());
-  canvas.addEventListener("mousemove", (e) => plot.onMove(e, canvas));
+  canvas.addEventListener("mousemove", (e) => plot.onMove(e));
   canvas.addEventListener("mouseleave", () => plot.mouseLeave());
 
   function drawGaussian(sigma: number, mu: number) {

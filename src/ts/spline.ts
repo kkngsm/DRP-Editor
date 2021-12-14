@@ -1,4 +1,5 @@
-export default class SplineAxis {
+export class SplineAxis {
+  length: number;
   num: number;
   a: number[];
   b: number[];
@@ -8,6 +9,7 @@ export default class SplineAxis {
     this.init(sp);
   }
   init(sp: number[]) {
+    this.length = sp.length;
     this.num = sp.length - 1;
 
     // ３次多項式の0次係数(a)を設定
@@ -53,5 +55,30 @@ export default class SplineAxis {
 
     const dt: number = t - j;
     return this.a[j] + (this.b[j] + (this.c[j] + this.d[j] * dt) * dt) * dt;
+  }
+}
+
+export class Spline2D {
+  x: SplineAxis;
+  y: SplineAxis;
+  constructor(_x: SplineAxis, _y: SplineAxis) {
+    if (_x.length == _y.length) {
+      this.x = _x;
+      this.y = _y;
+    } else {
+      throw "The length of 2 variables are different";
+    }
+  }
+  static create(xs: number[], ys: number[]) {
+    return new Spline2D(new SplineAxis(xs), new SplineAxis(ys));
+  }
+  draw(ctx: CanvasRenderingContext2D, canvasHeight: number) {
+    ctx.beginPath();
+    ctx.moveTo(this.x.culc(0), canvasHeight - this.y.culc(0));
+    const num = this.x.num;
+    for (let t = 0.02; t <= num - 1; t += 0.02) {
+      ctx.lineTo(this.x.culc(t), canvasHeight - this.y.culc(t));
+    }
+    ctx.stroke();
   }
 }
