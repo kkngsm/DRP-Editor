@@ -43,9 +43,9 @@ task("pug", (done) => {
 });
 
 //js
-task("ts", (done) => {
-  src(paths.tsSrc).pipe(tsProject()).js.pipe(dest(paths.jsDist));
-  done();
+task("ts", () => {
+  const tsResult = src(paths.tsSrc).pipe(tsProject());
+  return tsResult.js.pipe(dest(paths.jsDist));
 });
 
 //img
