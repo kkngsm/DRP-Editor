@@ -11,7 +11,10 @@ export default class Vec2 {
   }
   in(orign: Vec2, size: Vec2): boolean {
     return (
-      orign.x < this.x && orign.y < this.y && this.x < size.x && this.y < size.y
+      ((orign.x < this.x && this.x < size.x) ||
+        (size.x < this.x && this.x < orign.x)) &&
+      ((orign.y < this.y && this.y < size.y) ||
+        (size.y < this.y && this.y < orign.y))
     );
   }
 }

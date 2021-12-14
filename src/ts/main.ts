@@ -2,7 +2,6 @@
 import Plot from "./plot.js";
 import { Points } from "./point.js";
 import { Spline2D } from "./spline.js";
-import Vec2 from "./vec2.js";
 
 window.onload = () => {
   const canvas = <HTMLCanvasElement>document.getElementById("graph");
@@ -13,16 +12,13 @@ window.onload = () => {
 
   const plot = new Plot(
     canvas,
-    ctx,
-    new Vec2(10, canvas.clientHeight - 10),
-    new Vec2(100, 100),
     Points.create(xs, ys),
     Spline2D.createFromArrays(xs, ys)
   );
 
   draw(0);
   function draw(t: number) {
-    plot.draw();
+    plot.draw(ctx);
     drawGaussian(1, 0);
     requestAnimationFrame((time) => draw(time));
   }

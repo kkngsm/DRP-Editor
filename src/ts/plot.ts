@@ -4,27 +4,38 @@ import Vec2 from "./vec2.js";
 
 export default class Plot {
   private _draggingId: number;
+  private size: Vec2;
+  public origin: Vec2;
+
   constructor(
     private canvas: HTMLElement,
-    private ctx: CanvasRenderingContext2D,
-    public origin: Vec2,
-    public size: Vec2,
     private _ps?: Points,
     private _spline?: Spline2D
-  ) {}
+  ) {
+    this.origin = new Vec2(10, canvas.clientHeight - 10);
+    this.size = new Vec2(500, 300);
+  }
   addSpline(ps: Points) {
     this._ps = ps;
     this._spline = Spline2D.createFromPoints(ps);
   }
 
-  draw() {
+  draw(ctx: CanvasRenderingContext2D) {
     const h = this.canvas.clientHeight;
-    this.ctx.clearRect(0, 0, this.canvas.clientWidth, h);
-    if (this._spline != undefined) this._spline.draw(this.ctx, h);
-    if (this._ps != undefined) this._ps.draw(this.ctx, h);
+    ctx.clearRect(0, 0, this.canvas.clientWidth, h);
+    if (this._spline != undefined) this._spline.draw(ctx, h);
+    if (this._ps != undefined) this._ps.draw(ctx, h);
+    this.drawTick(ctx);
+  }
+  private drawTick(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    ctx.moveTo(this.origin.x, this.size.y - this.origin.y);
+    ctx.lineTo(this.origin.x, this.origin.y);
+    ctx.lineTo(this.size.x + this.origin.x, this.origin.y);
+    ctx.stroke();
   }
 
-  mouseHit(x: number, y: number): number {
+  private mouseHit(x: number, y: number): number {
     if (this._ps == undefined) return -1;
     const len = this._ps.length;
     for (let i = 0; i < len; i++) {
@@ -63,7 +74,7 @@ export default class Plot {
     );
 
     if (this._draggingId >= 0) {
-      this._ps.set(this._draggingId, m);
+      if (m.in(this.origin, this.size)) this._ps.set(this._draggingId, m);
       this._draggingId = this._ps.moveAndSort(this._draggingId);
 
       this._spline.x.init(this._ps.xs);
