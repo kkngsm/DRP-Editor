@@ -1,37 +1,36 @@
 import { Points } from "./point.js";
 import { Spline2D } from "./spline.js";
+import Vec2 from "./vec2.js";
 
 export default class Plot {
-  canvas: HTMLElement;
-  ctx: CanvasRenderingContext2D;
-  ps: Points;
-  spline: Spline2D;
-  draggingId: number;
+  private _draggingId: number;
   constructor(
-    _canvas: HTMLElement,
-    _ctx: CanvasRenderingContext2D,
-    _ps: Points,
-    _spline: Spline2D
-  ) {
-    this.canvas = _canvas;
-    this.ctx = _ctx;
-    this.ps = _ps;
-    this.spline = _spline;
+    private canvas: HTMLElement,
+    private ctx: CanvasRenderingContext2D,
+    public origin: Vec2,
+    public size: Vec2,
+    private _ps?: Points,
+    private _spline?: Spline2D
+  ) {}
+  addSpline(ps: Points) {
+    this._ps = ps;
+    this._spline = Spline2D.createFromPoints(ps);
   }
 
   draw() {
     const h = this.canvas.clientHeight;
     this.ctx.clearRect(0, 0, this.canvas.clientWidth, h);
-    this.spline.draw(this.ctx, h);
-    this.ps.draw(this.ctx, h);
+    if (this._spline != undefined) this._spline.draw(this.ctx, h);
+    if (this._ps != undefined) this._ps.draw(this.ctx, h);
   }
 
-  mouseHit(_x: number, _y: number): number {
-    const len = this.ps.length;
+  mouseHit(x: number, y: number): number {
+    if (this._ps == undefined) return -1;
+    const len = this._ps.length;
     for (let i = 0; i < len; i++) {
-      const p = this.ps.index(i);
+      const p = this._ps.index(i);
       const r = p.size / 2;
-      if (p.x - r < _x && p.x + r > _x && p.y - r < _y && p.y + r > _y) {
+      if (p.x - r < x && p.x + r > x && p.y - r < y && p.y + r > y) {
         return i;
       }
     }
@@ -39,40 +38,44 @@ export default class Plot {
   }
 
   onDown(e: MouseEvent) {
+    if (this._ps == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
     const x = e.clientX - offsetX;
     const y = this.canvas.clientHeight - e.clientY + offsetY;
 
-    this.ps.unselectAll();
+    this._ps.unselectAll();
 
     const selecteId: number = this.mouseHit(x, y);
     if (selecteId >= 0) {
-      this.ps.select(selecteId);
-      this.draggingId = selecteId;
+      this._ps.select(selecteId);
+      this._draggingId = selecteId;
     }
   }
 
   onMove(e: MouseEvent) {
+    if (this._ps == undefined || this._spline == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
-    const x = e.clientX - offsetX;
-    const y = this.canvas.clientHeight - e.clientY + offsetY;
+    const m = new Vec2(
+      e.clientX - offsetX,
+      this.canvas.clientHeight - e.clientY + offsetY
+    );
 
-    if (this.draggingId >= 0) {
-      this.ps.move(this.draggingId, x, y);
-      this.draggingId = this.ps.moveAndSort(this.draggingId);
+    if (this._draggingId >= 0) {
+      this._ps.set(this._draggingId, m);
+      this._draggingId = this._ps.moveAndSort(this._draggingId);
 
-      this.spline.x.init(this.ps.xs);
-      this.spline.y.init(this.ps.ys);
+      this._spline.x.init(this._ps.xs);
+      this._spline.y.init(this._ps.ys);
     }
   }
 
   onUp() {
-    this.draggingId = -1;
+    this._draggingId = -1;
   }
 
   mouseLeave() {
-    this.draggingId = -1;
+    this._draggingId = -1;
   }
 }

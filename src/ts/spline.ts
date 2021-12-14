@@ -1,3 +1,4 @@
+import type { Points } from "./point.js";
 export class SplineAxis {
   length: number;
   num: number;
@@ -61,16 +62,20 @@ export class SplineAxis {
 export class Spline2D {
   x: SplineAxis;
   y: SplineAxis;
-  constructor(_x: SplineAxis, _y: SplineAxis) {
-    if (_x.length == _y.length) {
-      this.x = _x;
-      this.y = _y;
+  constructor(x: SplineAxis, y: SplineAxis) {
+    if (x.length == y.length) {
+      this.x = x;
+      this.y = y;
     } else {
       throw "The length of 2 variables are different";
     }
   }
-  static create(xs: number[], ys: number[]) {
+
+  static createFromArrays(xs: number[], ys: number[]): Spline2D {
     return new Spline2D(new SplineAxis(xs), new SplineAxis(ys));
+  }
+  static createFromPoints(ps: Points): Spline2D {
+    return new Spline2D(new SplineAxis(ps.xs), new SplineAxis(ps.ys));
   }
   draw(ctx: CanvasRenderingContext2D, canvasHeight: number) {
     ctx.beginPath();

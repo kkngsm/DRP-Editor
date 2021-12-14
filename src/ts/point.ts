@@ -1,11 +1,11 @@
+import Vec2 from "./vec2.js";
+
 export class Point {
-  x: number;
-  y: number;
+  coord: Vec2;
   size: number;
   isSelected: boolean;
-  constructor(_x: number, _y: number) {
-    this.x = _x;
-    this.y = _y;
+  constructor(x: number, y: number) {
+    this.coord = new Vec2(x, y);
     this.size = 10;
     this.isSelected = false;
   }
@@ -29,18 +29,28 @@ export class Point {
   unselect() {
     this.isSelected = false;
   }
-  move(_x: number, _y: number) {
-    this.x = _x;
-    this.y = _y;
+  set(x: number, y: number) {
+    this.coord.set(x, y);
+  }
+
+  get x(): number {
+    return this.coord.x;
+  }
+  set x(x: number) {
+    this.coord.x = x;
+  }
+  get y(): number {
+    return this.coord.y;
+  }
+  set y(y: number) {
+    this.coord.y = y;
   }
 }
 
 export class Points {
-  ps: Point[];
   length: number;
-  constructor(_ps: Point[]) {
-    this.ps = _ps;
-    this.length = _ps.length;
+  constructor(private ps: Point[]) {
+    this.length = ps.length;
   }
   static create(xs: number[], ys: number[]): Points {
     return new Points(xs.map((e, i) => new Point(e, ys[i])));
@@ -62,8 +72,8 @@ export class Points {
   unselectAll() {
     this.ps.forEach((e) => e.unselect());
   }
-  move(i: number, x: number, y: number) {
-    this.ps[i].move(x, y);
+  set(i: number, coord: Vec2) {
+    this.ps[i].coord = coord;
   }
   moveAndSort(draggingId: number) {
     if (draggingId > 0 && this.ps[draggingId - 1].x > this.ps[draggingId].x) {
@@ -85,10 +95,10 @@ export class Points {
     return draggingId;
   }
 
-  set xs(_xs: number[]) {
-    if (this.length == _xs.length) {
+  set xs(xs: number[]) {
+    if (this.length == xs.length) {
       this.ps.forEach((e, i) => {
-        e.x = _xs[i];
+        e.x = xs[i];
       });
     } else {
       throw "The length of the argument and Points are different.";
@@ -97,10 +107,10 @@ export class Points {
   get xs(): number[] {
     return this.ps.map((e) => e.x);
   }
-  set ys(_ys: number[]) {
-    if (this.length == _ys.length) {
+  set ys(ys: number[]) {
+    if (this.length == ys.length) {
       this.ps.forEach((e, i) => {
-        e.y = _ys[i];
+        e.y = ys[i];
       });
     } else {
       throw "The length of the argument and Points are different.";
