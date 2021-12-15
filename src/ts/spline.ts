@@ -1,3 +1,4 @@
+import { Vector2 } from "three";
 import type { Points } from "./point";
 export class SplineAxis {
   length: number;
@@ -77,12 +78,12 @@ export class Spline2D {
   static createFromPoints(ps: Points): Spline2D {
     return new Spline2D(new SplineAxis(ps.xs), new SplineAxis(ps.ys));
   }
-  draw(ctx: CanvasRenderingContext2D, canvasHeight: number) {
+  draw(ctx: CanvasRenderingContext2D, origin: Vector2) {
     ctx.beginPath();
-    ctx.moveTo(this.x.culc(0), canvasHeight - this.y.culc(0));
+    ctx.moveTo(origin.x + this.x.culc(0), origin.y - this.y.culc(0));
     const num = this.x.num;
-    for (let t = 0.02; t <= num - 1; t += 0.02) {
-      ctx.lineTo(this.x.culc(t), canvasHeight - this.y.culc(t));
+    for (let t = 0.02; t <= num; t += 0.02) {
+      ctx.lineTo(origin.x + this.x.culc(t), origin.y - this.y.culc(t));
     }
     ctx.stroke();
   }

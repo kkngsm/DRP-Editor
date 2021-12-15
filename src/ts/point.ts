@@ -9,16 +9,15 @@ export class Point {
     this.size = 10;
     this.isSelected = false;
   }
-  draw(ctx: CanvasRenderingContext2D, height: number) {
-    const y = height - this.y;
+  draw(ctx: CanvasRenderingContext2D, origin: Vector2) {
     if (this.isSelected) {
       ctx.fillStyle = "red";
     } else {
       ctx.fillStyle = "black";
     }
     ctx.fillRect(
-      this.x - this.size / 2,
-      y - this.size / 2,
+      origin.x + this.x - this.size / 2,
+      origin.y - this.y - this.size / 2,
       this.size,
       this.size
     );
@@ -55,9 +54,9 @@ export class Points {
   static create(xs: number[], ys: number[]): Points {
     return new Points(xs.map((e, i) => new Point(e, ys[i])));
   }
-  draw(ctx: CanvasRenderingContext2D, height: number) {
+  draw(ctx: CanvasRenderingContext2D, origin: Vector2) {
     this.ps.forEach((e) => {
-      e.draw(ctx, height);
+      e.draw(ctx, origin);
     });
   }
   index(i: number) {
