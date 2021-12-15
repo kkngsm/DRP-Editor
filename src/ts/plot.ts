@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
-import { Points } from "./point.js";
-import { Spline2D } from "./spline.js";
+import { Points } from "./point";
+import { Spline2D } from "./spline";
 
 export default class Plot {
   private _draggingId: number;

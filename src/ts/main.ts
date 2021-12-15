@@ -1,7 +1,7 @@
 "use strict";
-import Plot from "./plot.js";
-import { Points } from "./point.js";
-import { Spline2D } from "./spline.js";
+import Plot from "./plot";
+import { Points } from "./point";
+import { Spline2D } from "./spline";
 
 window.onload = () => {
   const canvas = <HTMLCanvasElement>document.getElementById("graph");

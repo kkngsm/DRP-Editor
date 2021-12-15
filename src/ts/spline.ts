@@ -1,4 +1,4 @@
-import type { Points } from "./point.js";
+import type { Points } from "./point";
 export class SplineAxis {
   length: number;
   num: number;
