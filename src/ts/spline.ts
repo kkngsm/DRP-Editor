@@ -50,7 +50,7 @@ export class SplineAxis {
       this.b[i] = this.a[i + 1] - this.a[i] - this.c[i] - this.d[i];
     }
   }
-  culc(t: number) {
+  calc(t: number) {
     let j: number = Math.floor(t); // 小数点以下切捨て
     if (j < 0) j = 0;
     else if (j >= this.num) j = this.num - 1; // 丸め誤差を考慮
@@ -78,12 +78,18 @@ export class Spline2D {
   static createFromPoints(ps: Points): Spline2D {
     return new Spline2D(new SplineAxis(ps.xs), new SplineAxis(ps.ys));
   }
-  draw(ctx: CanvasRenderingContext2D, origin: Vector2) {
+  draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
     ctx.beginPath();
-    ctx.moveTo(origin.x + this.x.culc(0), origin.y - this.y.culc(0));
+    ctx.moveTo(
+      origin.x + this.x.calc(0) * scale.x,
+      origin.y - this.y.calc(0) * scale.y
+    );
     const num = this.x.num;
     for (let t = 0.02; t <= num; t += 0.02) {
-      ctx.lineTo(origin.x + this.x.culc(t), origin.y - this.y.culc(t));
+      ctx.lineTo(
+        origin.x + this.x.calc(t) * scale.x,
+        origin.y - this.y.calc(t) * scale.y
+      );
     }
     ctx.stroke();
   }

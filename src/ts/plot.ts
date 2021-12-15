@@ -1,30 +1,42 @@
 import { Vector2 } from "three";
+import Gaussian from "./gaussian";
 import { Points } from "./point";
 import { Spline2D } from "./spline";
-
 export default class Plot {
   private _draggingId: number;
-  private size: Vector2;
-  public origin: Vector2;
 
   constructor(
     private canvas: HTMLElement,
+    private size: Vector2,
+    private origin: Vector2,
+    public scale: Vector2,
+
     private _ps?: Points,
-    private _spline?: Spline2D
+    private _spline?: Spline2D,
+    private _gaussian?: Gaussian
   ) {
     this.origin = new Vector2(50, canvas.clientHeight - 50);
-    this.size = new Vector2(500, 300);
   }
   addSpline(ps: Points) {
     this._ps = ps;
     this._spline = Spline2D.createFromPoints(ps);
   }
+  addGausssian(g: Gaussian) {
+    this._gaussian = g;
+  }
 
   draw(ctx: CanvasRenderingContext2D) {
     const h = this.canvas.clientHeight;
     ctx.clearRect(0, 0, this.canvas.clientWidth, h);
-    if (this._spline != undefined) this._spline.draw(ctx, this.origin);
-    if (this._ps != undefined) this._ps.draw(ctx, this.origin);
+    if (this._spline != undefined) {
+      this._spline.draw(ctx, this.origin, this.scale);
+    }
+    if (this._ps != undefined) {
+      this._ps.draw(ctx, this.origin, this.scale);
+    }
+    if (this._gaussian != undefined) {
+      this._gaussian.draw(ctx, this.origin, this.size, this.scale);
+    }
     this.drawTick(ctx);
   }
   private drawTick(ctx: CanvasRenderingContext2D) {
@@ -35,15 +47,21 @@ export default class Plot {
     ctx.stroke();
   }
 
-  private mouseHit(x: number, y: number): number {
+  private mouseHit(mouse: Vector2): number {
     if (this._ps == undefined) return -1;
-    const m = new Vector2(x - this.origin.x, this.origin.y - y);
+    const m = new Vector2(mouse.x - this.origin.x, this.origin.y - mouse.y);
 
     const len = this._ps.length;
     for (let i = 0; i < len; i++) {
       const p = this._ps.index(i);
       const r = p.size / 2;
-      if (m.x - r < p.x && m.x + r > p.x && m.y - r < p.y && m.y + r > p.y) {
+      const coord = new Vector2().copy(p.coord).multiply(this.scale);
+      if (
+        m.x - r < coord.x &&
+        m.x + r > coord.x &&
+        m.y - r < coord.y &&
+        m.y + r > coord.y
+      ) {
         return i;
       }
     }
@@ -54,12 +72,11 @@ export default class Plot {
     if (this._ps == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
-    const x = e.clientX - offsetX;
-    const y = e.clientY - offsetY;
+    const m = new Vector2(e.clientX - offsetX, e.clientY - offsetY);
 
     this._ps.unselectAll();
 
-    const selecteId: number = this.mouseHit(x, y);
+    const selecteId: number = this.mouseHit(m);
     if (selecteId >= 0) {
       this._ps.select(selecteId);
       this._draggingId = selecteId;
@@ -74,8 +91,8 @@ export default class Plot {
     if (this._draggingId >= 0) {
       const [x, y] = this.contain(m);
       const p = this._ps.index(this._draggingId);
-      if (x) p.coord.setX(m.x - this.origin.x);
-      if (y) p.coord.setY(this.origin.y - m.y);
+      if (x) p.coord.setX((m.x - this.origin.x) / this.scale.x);
+      if (y) p.coord.setY((this.origin.y - m.y) / this.scale.y);
       this._draggingId = this._ps.moveAndSort(this._draggingId);
 
       this._spline.x.init(this._ps.xs);
@@ -91,17 +108,17 @@ export default class Plot {
     this._draggingId = -1;
   }
 
-  contain(p: Vector2): boolean[] {
+  contain(v: Vector2): boolean[] {
     const edge = new Vector2(
       this.origin.x + this.size.x,
       this.size.y - this.origin.y
     );
 
     return [
-      (this.origin.x < p.x && p.x < edge.x) ||
-        (edge.x < p.x && p.x < this.origin.x),
-      (this.origin.y < p.y && p.y < edge.y) ||
-        (edge.y < p.y && p.y < this.origin.y),
+      (this.origin.x < v.x && v.x < edge.x) ||
+        (edge.x < v.x && v.x < this.origin.x),
+      (this.origin.y < v.y && v.y < edge.y) ||
+        (edge.y < v.y && v.y < this.origin.y),
     ];
   }
 }
