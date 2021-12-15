@@ -1,11 +1,11 @@
-import Vec2 from "./vec2.js";
+import { Vector2 } from "three";
 
 export class Point {
-  coord: Vec2;
+  coord: Vector2;
   size: number;
   isSelected: boolean;
   constructor(x: number, y: number) {
-    this.coord = new Vec2(x, y);
+    this.coord = new Vector2(x, y);
     this.size = 10;
     this.isSelected = false;
   }
@@ -72,7 +72,7 @@ export class Points {
   unselectAll() {
     this.ps.forEach((e) => e.unselect());
   }
-  set(i: number, coord: Vec2) {
+  set(i: number, coord: Vector2) {
     this.ps[i].coord = coord;
   }
   moveAndSort(draggingId: number) {

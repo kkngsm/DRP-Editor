@@ -1,19 +1,19 @@
+import { Vector2 } from "three";
 import { Points } from "./point.js";
 import { Spline2D } from "./spline.js";
-import Vec2 from "./vec2.js";
 
 export default class Plot {
   private _draggingId: number;
-  private size: Vec2;
-  public origin: Vec2;
+  private size: Vector2;
+  public origin: Vector2;
 
   constructor(
     private canvas: HTMLElement,
     private _ps?: Points,
     private _spline?: Spline2D
   ) {
-    this.origin = new Vec2(10, canvas.clientHeight - 10);
-    this.size = new Vec2(500, 300);
+    this.origin = new Vector2(10, canvas.clientHeight - 10);
+    this.size = new Vector2(500, 300);
   }
   addSpline(ps: Points) {
     this._ps = ps;
@@ -68,13 +68,13 @@ export default class Plot {
     if (this._ps == undefined || this._spline == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
-    const m = new Vec2(
+    const m = new Vector2(
       e.clientX - offsetX,
       this.canvas.clientHeight - e.clientY + offsetY
     );
 
     if (this._draggingId >= 0) {
-      if (m.in(this.origin, this.size)) this._ps.set(this._draggingId, m);
+      if (this.contain(m)) this._ps.set(this._draggingId, m);
       this._draggingId = this._ps.moveAndSort(this._draggingId);
 
       this._spline.x.init(this._ps.xs);
@@ -88,5 +88,19 @@ export default class Plot {
 
   mouseLeave() {
     this._draggingId = -1;
+  }
+
+  contain(p: Vector2): boolean {
+    const edge = new Vector2(
+      this.origin.x + this.size.x,
+      this.origin.y + this.size.y
+    );
+
+    return (
+      ((this.origin.x < p.x && p.x < edge.x) ||
+        (edge.x < p.x && p.x < this.origin.x)) &&
+      ((this.origin.y < p.y && p.y < edge.y) ||
+        (edge.y < p.y && p.y < this.origin.y))
+    );
   }
 }
