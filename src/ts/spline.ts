@@ -1,5 +1,6 @@
 import { Vector2 } from "three";
 import type { Points } from "./point";
+
 export class SplineAxis {
   length: number;
   num: number;
@@ -79,18 +80,16 @@ export class Spline2D {
     return new Spline2D(new SplineAxis(ps.xs), new SplineAxis(ps.ys));
   }
   draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
-    ctx.beginPath();
     ctx.moveTo(
       origin.x + this.x.calc(0) * scale.x,
       origin.y - this.y.calc(0) * scale.y
     );
     const num = this.x.num;
-    for (let t = 0.02; t <= num; t += 0.02) {
+    for (let t = 0.1; t <= num; t += 0.1) {
       ctx.lineTo(
         origin.x + this.x.calc(t) * scale.x,
         origin.y - this.y.calc(t) * scale.y
       );
     }
-    ctx.stroke();
   }
 }

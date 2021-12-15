@@ -14,7 +14,7 @@ window.onload = () => {
   ctx.lineJoin = "round";
   ctx.shadowOffsetX = 5;
   ctx.shadowOffsetY = 5;
-  ctx.shadowColor = "rgb(50, 50, 50)";
+  ctx.shadowColor = "rgb(200, 200, 200)";
   ctx.shadowBlur = 5;
 
   const g = new Gaussian(1, 0);

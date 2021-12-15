@@ -2,6 +2,7 @@ import { Vector2 } from "three";
 import Gaussian from "./gaussian";
 import { Points } from "./point";
 import { Spline2D } from "./spline";
+
 export default class Plot {
   private _draggingId: number;
 
@@ -28,23 +29,39 @@ export default class Plot {
   draw(ctx: CanvasRenderingContext2D) {
     const h = this.canvas.clientHeight;
     ctx.clearRect(0, 0, this.canvas.clientWidth, h);
+    ctx.beginPath();
     if (this._spline != undefined) {
       this._spline.draw(ctx, this.origin, this.scale);
-    }
-    if (this._ps != undefined) {
-      this._ps.draw(ctx, this.origin, this.scale);
     }
     if (this._gaussian != undefined) {
       this._gaussian.draw(ctx, this.origin, this.size, this.scale);
     }
     this.drawTick(ctx);
+    ctx.stroke();
+    if (this._ps != undefined) {
+      this._ps.draw(ctx, this.origin, this.scale);
+    }
   }
   private drawTick(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.moveTo(this.origin.x, this.size.y - this.origin.y);
+    const top = this.origin.y - this.size.y;
+    const right = this.size.x + this.origin.x;
+    ctx.moveTo(this.origin.x, top);
     ctx.lineTo(this.origin.x, this.origin.y);
-    ctx.lineTo(this.size.x + this.origin.x, this.origin.y);
-    ctx.stroke();
+    ctx.lineTo(right, this.origin.y);
+    const unit = new Vector2(1, 0.2).multiply(this.scale);
+
+    const maxX = this.size.x - unit.x;
+    for (let x = unit.x; x <= maxX; x += unit.x) {
+      const fx = this.origin.x + Math.floor(x);
+      ctx.moveTo(fx, top);
+      ctx.lineTo(fx, this.origin.y);
+    }
+    const maxY = this.size.y - unit.y;
+    for (let y = unit.y; y <= maxY; y += unit.y) {
+      const fy = this.origin.y - Math.floor(y);
+      ctx.moveTo(this.origin.x, fy);
+      ctx.lineTo(right, fy);
+    }
   }
 
   private mouseHit(mouse: Vector2): number {
@@ -54,7 +71,7 @@ export default class Plot {
     const len = this._ps.length;
     for (let i = 0; i < len; i++) {
       const p = this._ps.index(i);
-      const r = p.size / 2;
+      const r = p.size;
       const coord = new Vector2().copy(p.coord).multiply(this.scale);
       if (
         m.x - r < coord.x &&

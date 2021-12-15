@@ -1,5 +1,4 @@
 import { Vector2 } from "three";
-
 export default class Gaussian {
   constructor(private sigma: number, private mu: number) {}
   calc(x: number): number {
@@ -21,11 +20,10 @@ export default class Gaussian {
     size: Vector2,
     scale: Vector2
   ) {
-    ctx.beginPath();
     ctx.moveTo(origin.x, origin.y - this.calc(0) * scale.y);
-    for (let t = 0.02; t <= size.x; t += 0.02) {
+    const maxX = size.x / scale.x;
+    for (let t = 0.1; t <= maxX; t += 0.1) {
       ctx.lineTo(origin.x + t * scale.x, origin.y - this.calc(t) * scale.y);
     }
-    ctx.stroke();
   }
 }
