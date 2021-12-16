@@ -12,13 +12,13 @@ export class Point {
   draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
     if (this.isSelected) {
       ctx.fillStyle = "red";
+      console.log(this.coord);
     } else {
       ctx.fillStyle = "black";
     }
-    const canvasCoord = new Vector2().copy(this.coord).multiply(scale);
     ctx.fillRect(
-      origin.x + canvasCoord.x - this.size / 2,
-      origin.y - canvasCoord.y - this.size / 2,
+      origin.x + this.coord.x * scale.x - this.size / 2,
+      origin.y - this.coord.y * scale.y - this.size / 2,
       this.size,
       this.size
     );
@@ -60,7 +60,7 @@ export class Points {
       e.draw(ctx, origin, scale);
     });
   }
-  index(i: number) {
+  indexOf(i: number) {
     return this.ps[i];
   }
   select(i: number) {

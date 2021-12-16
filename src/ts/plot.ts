@@ -48,19 +48,27 @@ export default class Plot {
     ctx.moveTo(this.origin.x, top);
     ctx.lineTo(this.origin.x, this.origin.y);
     ctx.lineTo(right, this.origin.y);
-    const unit = new Vector2(1, 0.2).multiply(this.scale);
 
-    const maxX = this.size.x - unit.x;
-    for (let x = unit.x; x <= maxX; x += unit.x) {
-      const fx = this.origin.x + Math.floor(x);
+    const unitX = 1;
+    const unitY = 0.1;
+    const canvasUnitX = unitX * this.scale.x;
+    const canvasUnitY = unitY * this.scale.y;
+
+    const countX = this.size.x / canvasUnitX;
+    ctx.textAlign = "start";
+    for (let x = 0; x <= countX; x += 1) {
+      const fx = this.origin.x + Math.floor(x * canvasUnitX);
       ctx.moveTo(fx, top);
       ctx.lineTo(fx, this.origin.y);
+      ctx.fillText((x * unitX).toFixed(1), fx, this.origin.y + 10);
     }
-    const maxY = this.size.y - unit.y;
-    for (let y = unit.y; y <= maxY; y += unit.y) {
-      const fy = this.origin.y - Math.floor(y);
+    const countY = this.size.y / canvasUnitY;
+    ctx.textAlign = "end";
+    for (let y = 0; y <= countY; y += 1) {
+      const fy = this.origin.y - Math.floor(y * canvasUnitY);
       ctx.moveTo(this.origin.x, fy);
       ctx.lineTo(right, fy);
+      ctx.fillText((y * unitY).toFixed(1), this.origin.x - 5, fy);
     }
   }
 
@@ -70,7 +78,7 @@ export default class Plot {
 
     const len = this._ps.length;
     for (let i = 0; i < len; i++) {
-      const p = this._ps.index(i);
+      const p = this._ps.indexOf(i);
       const r = p.size;
       const coord = new Vector2().copy(p.coord).multiply(this.scale);
       if (
@@ -107,7 +115,7 @@ export default class Plot {
     const m = new Vector2(e.clientX - offsetX, e.clientY - offsetY);
     if (this._draggingId >= 0) {
       const [x, y] = this.contain(m);
-      const p = this._ps.index(this._draggingId);
+      const p = this._ps.indexOf(this._draggingId);
       if (x) p.coord.setX((m.x - this.origin.x) / this.scale.x);
       if (y) p.coord.setY((this.origin.y - m.y) / this.scale.y);
       this._draggingId = this._ps.moveAndSort(this._draggingId);

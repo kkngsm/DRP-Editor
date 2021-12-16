@@ -18,8 +18,8 @@ window.onload = () => {
   ctx.shadowBlur = 5;
 
   const g = new Gaussian(1, 0);
-  const xs: number[] = [0, 1, 2, 3, 4, 5];
-  const ys: number[] = xs.map((e) => g.calc(e)); //[10, 20, 30, 50, 70, 40, 30, 20, 50];
+  const xs: number[] = [0, 0.6, 1.69, 3, 5];
+  const ys: number[] = xs.map((e) => g.calc(e));
 
   const plot = new Plot(
     canvas,
