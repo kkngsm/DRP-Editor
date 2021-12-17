@@ -1,6 +1,8 @@
 import { Vector2 } from "three";
 import type { Points } from "./point";
-
+/**
+ * ある軸における3次スプラインの計算
+ */
 export class SplineAxis {
   length: number;
   num: number;
@@ -11,6 +13,10 @@ export class SplineAxis {
   constructor(sp: number[]) {
     this.init(sp);
   }
+  /**
+   * 係数a, b, c, dを設定する
+   * @param sp ある軸における数値の配列
+   */
   init(sp: number[]) {
     this.length = sp.length;
     this.num = sp.length - 1;
@@ -51,6 +57,11 @@ export class SplineAxis {
       this.b[i] = this.a[i + 1] - this.a[i] - this.c[i] - this.d[i];
     }
   }
+  /**
+   * 係数を元に補完値を返す
+   * @param t
+   * @returns 補完値
+   */
   calc(t: number) {
     let j: number = Math.floor(t); // 小数点以下切捨て
     if (j < 0) j = 0;
@@ -61,6 +72,9 @@ export class SplineAxis {
   }
 }
 
+/**
+ * 2Dの3次スプライン曲線
+ */
 export class Spline2D {
   x: SplineAxis;
   y: SplineAxis;
@@ -69,16 +83,35 @@ export class Spline2D {
       this.x = x;
       this.y = y;
     } else {
-      throw "The length of 2 variables are different";
+      throw new Error("The length of the two arguments is different");
     }
   }
-
+  /**
+   * 二つの配列から生成する
+   * @param xs
+   * @param ys
+   * @returns Spline2D
+   */
   static createFromArrays(xs: number[], ys: number[]): Spline2D {
+    if (xs.length == ys.length) {
+      throw new Error("The length of the two arguments is different");
+    }
     return new Spline2D(new SplineAxis(xs), new SplineAxis(ys));
   }
+  /**
+   * Pointsから生成する
+   * @param ps Points
+   * @returns Spline2D
+   */
   static createFromPoints(ps: Points): Spline2D {
     return new Spline2D(new SplineAxis(ps.xs), new SplineAxis(ps.ys));
   }
+  /**
+   * 3次スプライン曲線を描画する
+   * @param ctx 描画先の2Dコンテキスト
+   * @param origin 原点
+   * @param scale 拡大率
+   */
   draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
     ctx.moveTo(
       origin.x + this.x.calc(0) * scale.x,

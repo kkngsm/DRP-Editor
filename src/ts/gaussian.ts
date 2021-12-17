@@ -1,19 +1,32 @@
 import { Vector2 } from "three";
 export default class Gaussian {
   constructor(private sigma: number, private mu: number) {}
+  /**
+   * 正規分布の関数
+   * @param x
+   */
   calc(x: number): number {
     return (
       (1 / (this.sigma * Math.sqrt(2 * Math.PI))) *
       Math.exp(-((x - this.mu) ** 2) / (2 * this.sigma ** 2))
     );
   }
-  inverseCalcOnSd(x: number, y: number): number {
-    return (
-      Math.exp(-((x - this.mu) ** 2) / (2 * y ** 2)) /
-      (y * Math.sqrt(2 * Math.PI))
-    );
+  /**
+   * 正規分布の関数をsigmaについて解き、sigmaを設定する
+   * @param x
+   * @param y
+   */
+  inverseCalcOnSd(x: number, y: number): number | string {
+    const s2 = -((x - this.mu) ** 2) / (2 * Math.log(y));
+    if (s2 >= 0) {
+      return Math.sqrt(s2);
+    } else {
+      return "this answer is imaginary number";
+    }
   }
-
+  /**
+   * 正規分布を描画する
+   */
   draw(
     ctx: CanvasRenderingContext2D,
     origin: Vector2,

@@ -18,14 +18,26 @@ export default class Plot {
   ) {
     this.origin = new Vector2(50, canvas.clientHeight - 50);
   }
+  /**
+   * 3次スプライン曲線を追加する
+   * @param ps 3次スプライン曲線のもとになるポイント
+   */
   addSpline(ps: Points) {
     this._ps = ps;
     this._spline = Spline2D.createFromPoints(ps);
   }
+  /**
+   * ガウシアン曲線を追加する
+   * @param g ガウシアン曲線のもとにクラス
+   */
   addGausssian(g: Gaussian) {
     this._gaussian = g;
   }
 
+  /**
+   * キャンバスにグラフを描画する
+   * @param ctx 描画するキャンバスの2Dコンテキスト
+   */
   draw(ctx: CanvasRenderingContext2D) {
     const h = this.canvas.clientHeight;
     ctx.clearRect(0, 0, this.canvas.clientWidth, h);
@@ -34,6 +46,10 @@ export default class Plot {
       this._spline.draw(ctx, this.origin, this.scale);
     }
     if (this._gaussian != undefined) {
+      // if (this._ps != undefined) {
+      //   const p = this._ps.indexOf(0);
+      //   this._gaussian.setSd(this._gaussian.inverseCalcOnSd(p.y, p.x));
+      // }
       this._gaussian.draw(ctx, this.origin, this.size, this.scale);
     }
     this.drawTick(ctx);
@@ -42,6 +58,11 @@ export default class Plot {
       this._ps.draw(ctx, this.origin, this.scale);
     }
   }
+
+  /**
+   * メモリを描画する
+   * @param ctx 描画するキャンバスの2Dコンテキスト
+   */
   private drawTick(ctx: CanvasRenderingContext2D) {
     const top = this.origin.y - this.size.y;
     const right = this.size.x + this.origin.x;
@@ -72,6 +93,11 @@ export default class Plot {
     }
   }
 
+  /**
+   * マウスクリックしたかどうか、クリックされたPointがどれかを返す
+   * @param ctx 描画するキャンバスの2Dコンテキスト
+   * @return Pointsのindexを返す。存在しない場合は-1
+   */
   private mouseHit(mouse: Vector2): number {
     if (this._ps == undefined) return -1;
     const m = new Vector2(mouse.x - this.origin.x, this.origin.y - mouse.y);
@@ -92,7 +118,10 @@ export default class Plot {
     }
     return -1;
   }
-
+  /**
+   * マウスをクリックした際に呼び出される関数
+   * @param e MouseEvent
+   */
   onDown(e: MouseEvent) {
     if (this._ps == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
@@ -108,31 +137,47 @@ export default class Plot {
     }
   }
 
+  /**
+   * マウスをクリックした際に呼び出される関数
+   *
+   * @param e MouseEvent
+   */
   onMove(e: MouseEvent) {
-    if (this._ps == undefined || this._spline == undefined) return;
+    if (this._ps == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
     const m = new Vector2(e.clientX - offsetX, e.clientY - offsetY);
     if (this._draggingId >= 0) {
+      // 移動先がグラフ上にあるかどうか
       const [x, y] = this.contain(m);
       const p = this._ps.indexOf(this._draggingId);
-      if (x) p.coord.setX((m.x - this.origin.x) / this.scale.x);
-      if (y) p.coord.setY((this.origin.y - m.y) / this.scale.y);
-      this._draggingId = this._ps.moveAndSort(this._draggingId);
-
-      this._spline.x.init(this._ps.xs);
-      this._spline.y.init(this._ps.ys);
+      // グラフの範囲内で移動させる
+      if (x) {
+        p.coord.setX((m.x - this.origin.x) / this.scale.x);
+      }
+      if (y) {
+        p.coord.setY((this.origin.y - m.y) / this.scale.y);
+      }
+      this._draggingId = this._ps.sort(this._draggingId);
+      // スプライン曲線の再計算
+      if (this._spline != undefined) {
+        this._spline.x.init(this._ps.xs);
+        this._spline.y.init(this._ps.ys);
+      }
     }
   }
 
-  onUp() {
+  /**
+   * ドラッグを解除するための関数
+   */
+  draggOff() {
     this._draggingId = -1;
   }
-
-  mouseLeave() {
-    this._draggingId = -1;
-  }
-
+  /**
+   * vがこのプロットの範囲内にあるかどうかを返す
+   * @param v: ベクトル
+   * @return [x軸で範囲内にあるかどうか, y軸で範囲内にあるかどうか]
+   */
   contain(v: Vector2): boolean[] {
     const edge = new Vector2(
       this.origin.x + this.size.x,
