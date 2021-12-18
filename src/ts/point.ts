@@ -78,7 +78,7 @@ export class Points {
    * @returns Points
    */
   static create(xs: number[], ys: number[]): Points {
-    if (xs.length == ys.length) {
+    if (xs.length != ys.length) {
       throw new Error("The length of the two arguments is different");
     }
     return new Points(xs.map((e, i) => new Point(e, ys[i])));

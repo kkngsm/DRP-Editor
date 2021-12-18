@@ -93,7 +93,7 @@ export class Spline2D {
    * @returns Spline2D
    */
   static createFromArrays(xs: number[], ys: number[]): Spline2D {
-    if (xs.length == ys.length) {
+    if (xs.length != ys.length) {
       throw new Error("The length of the two arguments is different");
     }
     return new Spline2D(new SplineAxis(xs), new SplineAxis(ys));

@@ -36,8 +36,8 @@ window.onload = () => {
     plot.draw(ctx);
     requestAnimationFrame((time) => draw(time));
   }
-  canvas.addEventListener("mousedown", (e) => plot.onDown(e));
+  canvas.addEventListener("mousedown", () => plot.onDown());
   canvas.addEventListener("mouseup", () => plot.draggOff());
   canvas.addEventListener("mousemove", (e) => plot.onMove(e));
-  canvas.addEventListener("mouseleave", () => plot.draggOff());
+  canvas.addEventListener("mouseleave", () => plot.mouseLeave());
 };
