@@ -3,7 +3,9 @@ import Gaussian from "./gaussian";
 import { Points } from "./point";
 import { Spline2D } from "./spline";
 
-export default class Plot {
+export type CurveType = "gaussian" | "spline";
+
+export class Plot {
   private _draggingId: number;
   private _mousePos?: Vector2;
   constructor(
@@ -11,7 +13,7 @@ export default class Plot {
     private size: Vector2,
     private origin: Vector2,
     public scale: Vector2,
-
+    private _curve: CurveType,
     private _ps?: Points,
     private _spline?: Spline2D,
     private _gaussian?: Gaussian
@@ -42,15 +44,17 @@ export default class Plot {
     const h = this.canvas.clientHeight;
     ctx.clearRect(0, 0, this.canvas.clientWidth, h);
     ctx.beginPath();
-    if (this._spline != undefined) {
-      this._spline.draw(ctx, this.origin, this.scale);
-    }
-    if (this._gaussian != undefined) {
-      // if (this._ps != undefined) {
-      //   const p = this._ps.indexOf(0);
-      //   this._gaussian.setSd(this._gaussian.inverseCalcOnSd(p.y, p.x));
-      // }
-      this._gaussian.draw(ctx, this.origin, this.size, this.scale);
+    switch (this._curve) {
+      case "gaussian":
+        if (this._gaussian != undefined) {
+          this._gaussian.draw(ctx, this.origin, this.size, this.scale);
+        }
+        break;
+      case "spline":
+        if (this._spline != undefined) {
+          this._spline.draw(ctx, this.origin, this.scale);
+        }
+        break;
     }
     this.drawTick(ctx);
     ctx.stroke();
@@ -200,5 +204,11 @@ export default class Plot {
   }
   setScaleX(x: number) {
     this.scale.x = x;
+  }
+  changeGaussian() {
+    this._curve = "gaussian";
+  }
+  changeSpline() {
+    this._curve = "spline";
   }
 }

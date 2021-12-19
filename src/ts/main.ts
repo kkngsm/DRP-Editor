@@ -1,7 +1,7 @@
 "use strict";
 import { Vector2 } from "three";
 import Gaussian from "./gaussian";
-import Plot from "./plot";
+import { Plot } from "./plot";
 import { Points } from "./point";
 
 window.onload = () => {
@@ -28,6 +28,7 @@ window.onload = () => {
     new Vector2(500, 300),
     new Vector2(20, 20),
     new Vector2(100, 300),
+    "gaussian",
     ps
   );
 
@@ -50,5 +51,16 @@ window.onload = () => {
   const scale = <HTMLInputElement>document.getElementById("scale");
   scale.addEventListener("input", () => {
     plot.setScaleX(Number(scale.value));
+  });
+  const curveType = <HTMLSelectElement>document.getElementById("curveType");
+  curveType.addEventListener("change", () => {
+    switch (curveType.value) {
+      case "spline":
+        plot.changeSpline();
+        break;
+      case "gaussian":
+        plot.changeGaussian();
+        break;
+    }
   });
 };
