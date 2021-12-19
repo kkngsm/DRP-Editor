@@ -6,7 +6,6 @@ import { Spline2D } from "./spline";
 export type CurveType = "gaussian" | "spline";
 
 export class Plot {
-  private _draggingId: number;
   private _mousePos?: Vector2;
   constructor(
     private canvas: HTMLElement,
@@ -14,7 +13,6 @@ export class Plot {
     private origin: Vector2,
     public scale: Vector2,
     private _curve: CurveType,
-    private _ps?: Points,
     private _spline?: Spline2D,
     private _gaussian?: Gaussian
   ) {
@@ -25,8 +23,7 @@ export class Plot {
    * @param ps 3次スプライン曲線のもとになるポイント
    */
   addSpline(ps: Points) {
-    this._ps = ps;
-    this._spline = Spline2D.createFromPoints(ps);
+    this._spline = new Spline2D(ps);
   }
   /**
    * ガウシアン曲線を追加する
@@ -52,15 +49,12 @@ export class Plot {
         break;
       case "spline":
         if (this._spline != undefined) {
-          this._spline.draw(ctx, this.origin, this.scale);
+          this._spline.draw(ctx, this.origin, this.size, this.scale);
         }
         break;
     }
     this.drawTick(ctx);
     ctx.stroke();
-    if (this._ps != undefined) {
-      this._ps.draw(ctx, this.origin, this.scale);
-    }
   }
 
   /**
@@ -98,41 +92,31 @@ export class Plot {
    * @param ctx 描画するキャンバスの2Dコンテキスト
    * @return Pointsのindexを返す。存在しない場合は-1
    */
-  private mouseHit(): number {
-    if (!this._ps || !this._mousePos) return -1;
+  private mouseHit() {
+    if (!this._mousePos) return;
     const m = new Vector2(
       this._mousePos.x - this.origin.x,
       this.origin.y - this._mousePos.y
     );
-    const len = this._ps.length;
-    for (let i = 0; i < len; i++) {
-      const p = this._ps.indexOf(i);
-      const r = p.size;
-      const coord = new Vector2().copy(p.coord).multiply(this.scale);
-      if (
-        m.x - r < coord.x &&
-        m.x + r > coord.x &&
-        m.y - r < coord.y &&
-        m.y + r > coord.y
-      ) {
-        return i;
+    switch (this._curve) {
+      case "gaussian":
+        return;
+      case "spline": {
+        if (this._spline != undefined) {
+          this._spline.mouseHit(m, this.scale);
+        }
       }
     }
-    return -1;
   }
   /**
    * マウスをクリックした際に呼び出される関数
    * @param e MouseEvent
    */
   onDown() {
-    if (this._ps == undefined) return;
-    this._ps.unselectAll();
+    if (this._spline == undefined) return;
+    this._spline.unselectAll();
 
-    const selecteId: number = this.mouseHit();
-    if (selecteId >= 0) {
-      this._ps.select(selecteId);
-      this._draggingId = selecteId;
-    }
+    this.mouseHit();
   }
 
   /**
@@ -141,40 +125,28 @@ export class Plot {
    * @param e MouseEvent
    */
   onMove(e: MouseEvent) {
-    if (this._ps == undefined) return;
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
     this._mousePos = new Vector2(e.clientX - offsetX, e.clientY - offsetY);
-    if (this._draggingId >= 0) {
-      // 移動先がグラフ上にあるかどうか
-      const [x, y] = this.contain(this._mousePos);
-      // グラフの範囲内で移動させる
-      if (x) {
-        this._ps.setX(
-          this._draggingId,
-          (this._mousePos.x - this.origin.x) / this.scale.x
-        );
-      }
-      if (y) {
-        this._ps.setY(
-          this._draggingId,
-          (this.origin.y - this._mousePos.y) / this.scale.y
-        );
-        //最大Yをセットする
-      }
-      this._draggingId = this._ps.sort(this._draggingId);
-      // スプライン曲線の再計算
-      if (this._spline != undefined) {
-        this._spline.x.init(this._ps.xs);
-        this._spline.y.init(this._ps.ys);
-      }
-      // 正規分布曲線を再計算
-      if (this._gaussian != undefined) {
-        const p = this._ps.indexOf(0);
-        this._gaussian.inverseCalcOnSd(p.x, p.y);
-      }
+    if (this._spline != undefined) {
+      this._spline.move(
+        this._mousePos,
+        this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
+        this.origin,
+        this.scale
+      );
+      this._spline.init();
+    }
+    if (this._gaussian != undefined) {
+      this._gaussian.move(
+        this._mousePos,
+        this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
+        this.origin,
+        this.scale
+      );
     }
   }
+
   mouseLeave() {
     this.draggOff();
     this._mousePos = undefined;
@@ -184,8 +156,14 @@ export class Plot {
    * ドラッグを解除するための関数
    */
   draggOff() {
-    this._draggingId = -1;
+    if (this._spline != undefined) {
+      this._spline.dragReset();
+    }
+    if (this._gaussian != undefined) {
+      this._gaussian.dragReset();
+    }
   }
+
   /**
    * vがこのプロットの範囲内にあるかどうかを返す
    * @param v: ベクトル

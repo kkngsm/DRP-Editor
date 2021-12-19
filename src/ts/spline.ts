@@ -1,4 +1,5 @@
 import { Vector2 } from "three";
+import { Curve } from "./curve";
 import type { Points } from "./point";
 /**
  * ある軸における3次スプラインの計算
@@ -75,36 +76,13 @@ export class SplineAxis {
 /**
  * 2Dの3次スプライン曲線
  */
-export class Spline2D {
-  x: SplineAxis;
-  y: SplineAxis;
-  constructor(x: SplineAxis, y: SplineAxis) {
-    if (x.length == y.length) {
-      this.x = x;
-      this.y = y;
-    } else {
-      throw new Error("The length of the two arguments is different");
-    }
-  }
-  /**
-   * 二つの配列から生成する
-   * @param xs
-   * @param ys
-   * @returns Spline2D
-   */
-  static createFromArrays(xs: number[], ys: number[]): Spline2D {
-    if (xs.length != ys.length) {
-      throw new Error("The length of the two arguments is different");
-    }
-    return new Spline2D(new SplineAxis(xs), new SplineAxis(ys));
-  }
-  /**
-   * Pointsから生成する
-   * @param ps Points
-   * @returns Spline2D
-   */
-  static createFromPoints(ps: Points): Spline2D {
-    return new Spline2D(new SplineAxis(ps.xs), new SplineAxis(ps.ys));
+export class Spline2D extends Curve {
+  private x: SplineAxis;
+  private y: SplineAxis;
+  constructor(ps: Points) {
+    super(ps);
+    this.x = new SplineAxis(ps.xs);
+    this.y = new SplineAxis(ps.ys);
   }
   /**
    * 3次スプライン曲線を描画する
@@ -112,7 +90,12 @@ export class Spline2D {
    * @param origin 原点
    * @param scale 拡大率
    */
-  draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    origin: Vector2,
+    size: Vector2,
+    scale: Vector2
+  ): void {
     ctx.moveTo(
       origin.x + this.x.calc(0) * scale.x,
       origin.y - this.y.calc(0) * scale.y
@@ -124,5 +107,10 @@ export class Spline2D {
         origin.y - this.y.calc(t) * scale.y
       );
     }
+    this._ps.draw(ctx, origin, scale);
+  }
+  init() {
+    this.x.init(this._ps.xs);
+    this.y.init(this._ps.ys);
   }
 }

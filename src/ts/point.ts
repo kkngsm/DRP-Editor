@@ -177,6 +177,22 @@ export class Points {
     }
     return draggingId;
   }
+  mouseHit(mousePos: Vector2, scale: Vector2) {
+    for (let i = 0; i < this._length; i++) {
+      const p = this.ps[i];
+      const r = p.size;
+      const coord = new Vector2().copy(p.coord).multiply(scale);
+      if (
+        mousePos.x - r < coord.x &&
+        mousePos.x + r > coord.x &&
+        mousePos.y - r < coord.y &&
+        mousePos.y + r > coord.y
+      ) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
   set xs(xs: number[]) {
     if (this._length == xs.length) {

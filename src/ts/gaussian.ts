@@ -1,6 +1,11 @@
 import { Vector2 } from "three";
-export default class Gaussian {
-  constructor(private sigma: number, private mu: number) {}
+import { Curve } from "./curve";
+import { Points } from "./point";
+
+export default class Gaussian extends Curve {
+  constructor(private sigma: number, private mu: number, ps: Points) {
+    super(ps);
+  }
   /**
    * 正規分布の関数
    * @param x
@@ -14,8 +19,9 @@ export default class Gaussian {
    * @param x
    * @param y
    */
-  inverseCalcOnSd(x: number, y: number): number | void {
-    const s2 = -((x - this.mu) ** 2) / (2 * Math.log(y));
+  inverseCalcOnSd(): number | void {
+    const p = this._ps.indexOf(0);
+    const s2 = -((p.x - this.mu) ** 2) / (2 * Math.log(p.y));
     if (s2 >= 0) {
       this.sigma = Math.sqrt(s2);
       return this.sigma;
