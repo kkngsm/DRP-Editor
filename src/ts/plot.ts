@@ -100,6 +100,9 @@ export class Plot {
     );
     switch (this._curve) {
       case "gaussian":
+        if (this._gaussian != undefined) {
+          this._gaussian.mouseHit(m, this.scale);
+        }
         return;
       case "spline": {
         if (this._spline != undefined) {
@@ -144,6 +147,7 @@ export class Plot {
         this.origin,
         this.scale
       );
+      this._gaussian.inverseCalcOnSd();
     }
   }
 

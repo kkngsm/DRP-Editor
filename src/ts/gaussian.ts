@@ -43,5 +43,6 @@ export default class Gaussian extends Curve {
     for (let t = 0.1; t <= maxX; t += 0.1) {
       ctx.lineTo(origin.x + t * scale.x, origin.y - this.calc(t) * scale.y);
     }
+    this._ps.draw(ctx, origin, scale);
   }
 }
