@@ -22,14 +22,14 @@ export class Plot {
    * 3次スプライン曲線を追加する
    * @param ps 3次スプライン曲線のもとになるポイント
    */
-  addSpline(ps: Points) {
+  setSpline(ps: Points) {
     this._spline = new Spline2D(ps);
   }
   /**
    * ガウシアン曲線を追加する
    * @param g ガウシアン曲線のもとにクラス
    */
-  addGausssian(g: Gaussian) {
+  setGausssian(g: Gaussian) {
     this._gaussian = g;
   }
 
@@ -43,14 +43,10 @@ export class Plot {
     ctx.beginPath();
     switch (this._curve) {
       case "gaussian":
-        if (this._gaussian != undefined) {
-          this._gaussian.draw(ctx, this.origin, this.size, this.scale);
-        }
+        this._gaussian?.draw(ctx, this.origin, this.size, this.scale);
         break;
       case "spline":
-        if (this._spline != undefined) {
-          this._spline.draw(ctx, this.origin, this.size, this.scale);
-        }
+        this._spline?.draw(ctx, this.origin, this.size, this.scale);
         break;
     }
     this.drawTick(ctx);
@@ -100,15 +96,11 @@ export class Plot {
     );
     switch (this._curve) {
       case "gaussian":
-        if (this._gaussian != undefined) {
-          this._gaussian.mouseHit(m, this.scale);
-        }
-        return;
-      case "spline": {
-        if (this._spline != undefined) {
-          this._spline.mouseHit(m, this.scale);
-        }
-      }
+        this._gaussian?.mouseHit(m, this.scale);
+        break;
+      case "spline":
+        this._spline?.mouseHit(m, this.scale);
+        break;
     }
   }
   /**
@@ -116,9 +108,8 @@ export class Plot {
    * @param e MouseEvent
    */
   onDown() {
-    if (this._spline == undefined) return;
-    this._spline.unselectAll();
-
+    this._spline?.unselectAll();
+    this._gaussian?.unselectAll();
     this.mouseHit();
   }
 
@@ -131,24 +122,20 @@ export class Plot {
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
     this._mousePos = new Vector2(e.clientX - offsetX, e.clientY - offsetY);
-    if (this._spline != undefined) {
-      this._spline.move(
-        this._mousePos,
-        this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
-        this.origin,
-        this.scale
-      );
-      this._spline.init();
-    }
-    if (this._gaussian != undefined) {
-      this._gaussian.move(
-        this._mousePos,
-        this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
-        this.origin,
-        this.scale
-      );
-      this._gaussian.inverseCalcOnSd();
-    }
+    this._spline?.move(
+      this._mousePos,
+      this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
+      this.origin,
+      this.scale
+    );
+    this._spline?.init();
+    this._gaussian?.move(
+      this._mousePos,
+      this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
+      this.origin,
+      this.scale
+    );
+    this._gaussian?.inverseCalcOnSd();
   }
 
   mouseLeave() {
@@ -160,12 +147,8 @@ export class Plot {
    * ドラッグを解除するための関数
    */
   draggOff() {
-    if (this._spline != undefined) {
-      this._spline.dragReset();
-    }
-    if (this._gaussian != undefined) {
-      this._gaussian.dragReset();
-    }
+    this._spline?.dragReset();
+    this._gaussian?.dragReset();
   }
 
   /**
@@ -192,5 +175,12 @@ export class Plot {
   }
   changeSpline() {
     this._curve = "spline";
+  }
+  convertToSpline() {
+    this._curve = "spline";
+    if (this._gaussian == undefined) return;
+    const xs = [0, 0.6, 1.66, 3, 5].map((e) => e * this._gaussian.sigma);
+    const ys = xs.map((e) => this._gaussian.calc(e));
+    this.setSpline(Points.create(xs, ys));
   }
 }

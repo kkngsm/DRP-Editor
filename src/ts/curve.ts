@@ -62,6 +62,7 @@ export abstract class Curve {
     this._draggingId = selectedId;
     if (selectedId >= 0) {
       this.select(selectedId);
+      console.log(this._ps.indexOf(selectedId));
     }
   }
   move(mousePos: Vector2, [x, y]: boolean[], origin: Vector2, scale: Vector2) {

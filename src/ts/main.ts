@@ -2,7 +2,7 @@
 import { Vector2 } from "three";
 import Gaussian from "./gaussian";
 import { CurveType, Plot } from "./plot";
-import { Point, Points } from "./point";
+import { Points } from "./point";
 
 window.onload = () => {
   const canvas = <HTMLCanvasElement>document.getElementById("graph");
@@ -26,6 +26,14 @@ window.onload = () => {
         break;
     }
   });
+
+  const convertToSpline = <HTMLInputElement>(
+    document.getElementById("convertToSpline")
+  );
+  convertToSpline.addEventListener("click", () => {
+    plot.convertToSpline();
+    curveType.value = "spline";
+  });
   const ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
 
   ctx.lineWidth = 2;
@@ -36,7 +44,7 @@ window.onload = () => {
   ctx.shadowColor = "rgb(200, 200, 200)";
   ctx.shadowBlur = 5;
 
-  const g = new Gaussian(1, 0, new Points([new Point(0.5, 0.5)]));
+  const g = Gaussian.createFromSdAndMean(1, 0);
 
   const plot = new Plot(
     canvas,
@@ -46,11 +54,11 @@ window.onload = () => {
     curveType.value as CurveType
   );
 
-  const xs: number[] = [0, 0.6, 1.69, 3, 5];
+  const xs: number[] = [0, 0.6, 1.66, 3, 5];
   const ys: number[] = xs.map((e) => g.calc(e));
   const ps = Points.create(xs, ys);
-  plot.addSpline(ps);
-  plot.addGausssian(g);
+  plot.setSpline(ps);
+  plot.setGausssian(g);
 
   let then = 0;
   draw(0);
