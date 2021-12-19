@@ -3,12 +3,12 @@ import { Vector2 } from "three";
 /**グラフにおける一つのデータ */
 export class Point {
   coord: Vector2;
-  size: number;
-  isSelected: boolean;
+  private _size: number;
+  private _isSelected: boolean;
   constructor(x: number, y: number) {
     this.coord = new Vector2(x, y);
-    this.size = 10;
-    this.isSelected = false;
+    this._size = 10;
+    this._isSelected = false;
   }
   /**
    * ポイントを描画する
@@ -17,29 +17,29 @@ export class Point {
    * @param scale 拡大率
    */
   draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
-    if (this.isSelected) {
+    if (this._isSelected) {
       ctx.fillStyle = "red";
     } else {
       ctx.fillStyle = "black";
     }
     ctx.fillRect(
-      origin.x + this.coord.x * scale.x - this.size / 2,
-      origin.y - this.coord.y * scale.y - this.size / 2,
-      this.size,
-      this.size
+      origin.x + this.coord.x * scale.x - this._size / 2,
+      origin.y - this.coord.y * scale.y - this._size / 2,
+      this._size,
+      this._size
     );
   }
   /**
    * 選択する
    */
   select() {
-    this.isSelected = true;
+    this._isSelected = true;
   }
   /**
    * 非選択する
    */
   unselect() {
-    this.isSelected = false;
+    this._isSelected = false;
   }
   /**
    * 座標を設定する
@@ -62,14 +62,25 @@ export class Point {
   set y(y: number) {
     this.coord.y = y;
   }
+  get size(): number {
+    return this._size;
+  }
 }
 /**
  * Pointをまとめたもの
  */
 export class Points {
-  length: number;
+  private _length: number;
+  private _maxY: number;
   constructor(private ps: Point[]) {
-    this.length = ps.length;
+    this._length = ps.length;
+    if (this.length > 1) {
+      this._maxY = this.ps.reduce((a: Point, b: Point): Point => {
+        return a.y > b.y ? a : b;
+      }).y;
+    } else {
+      this._maxY = this.ps[0].y;
+    }
   }
   /**
    * x座標, y座標の配列をもとにPointsを生成する
@@ -129,6 +140,18 @@ export class Points {
    */
   set(index: number, coord: Vector2) {
     this.ps[index].coord = coord;
+    if (this._maxY < coord.y) {
+      this._maxY = coord.y;
+    }
+  }
+  setX(index: number, x: number) {
+    this.ps[index].x = x;
+  }
+  setY(index: number, y: number) {
+    this.ps[index].y = y;
+    if (this._maxY < y) {
+      this._maxY = y;
+    }
   }
   /**
    * Pointが動かされた際に左から順になっている配列に直す
@@ -143,7 +166,7 @@ export class Points {
       ];
       draggingId--;
     } else if (
-      draggingId < this.length - 1 &&
+      draggingId < this._length - 1 &&
       this.ps[draggingId].x > this.ps[draggingId + 1].x
     ) {
       [this.ps[draggingId + 1], this.ps[draggingId]] = [
@@ -156,7 +179,7 @@ export class Points {
   }
 
   set xs(xs: number[]) {
-    if (this.length == xs.length) {
+    if (this._length == xs.length) {
       this.ps.forEach((e, i) => {
         e.x = xs[i];
       });
@@ -168,9 +191,12 @@ export class Points {
     return this.ps.map((e) => e.x);
   }
   set ys(ys: number[]) {
-    if (this.length == ys.length) {
+    if (this._length == ys.length) {
       this.ps.forEach((e, i) => {
         e.y = ys[i];
+      });
+      this._maxY = ys.reduce((a, b) => {
+        return Math.max(a, b);
       });
     } else {
       throw new Error("The length of the argument and Points are different.");
@@ -178,5 +204,11 @@ export class Points {
   }
   get ys(): number[] {
     return this.ps.map((e) => e.y);
+  }
+  get length(): number {
+    return this._length;
+  }
+  get maxY(): number {
+    return this._maxY;
   }
 }

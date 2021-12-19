@@ -6,22 +6,21 @@ export default class Gaussian {
    * @param x
    */
   calc(x: number): number {
-    return (
-      (1 / (this.sigma * Math.sqrt(2 * Math.PI))) *
-      Math.exp(-((x - this.mu) ** 2) / (2 * this.sigma ** 2))
-    );
+    return Math.exp(-((x - this.mu) ** 2) / (2 * this.sigma ** 2));
+    // (this.sigma * Math.sqrt(2 * Math.PI))
   }
   /**
    * 正規分布の関数をsigmaについて解き、sigmaを設定する
    * @param x
    * @param y
    */
-  inverseCalcOnSd(x: number, y: number): number | string {
+  inverseCalcOnSd(x: number, y: number): number | void {
     const s2 = -((x - this.mu) ** 2) / (2 * Math.log(y));
     if (s2 >= 0) {
-      return Math.sqrt(s2);
+      this.sigma = Math.sqrt(s2);
+      return this.sigma;
     } else {
-      return "this answer is imaginary number";
+      console.log("this answer is imaginary number");
     }
   }
   /**

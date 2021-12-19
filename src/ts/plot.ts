@@ -57,14 +57,6 @@ export default class Plot {
     if (this._ps != undefined) {
       this._ps.draw(ctx, this.origin, this.scale);
     }
-    if (!this._mousePos) return;
-    if (
-      this.scale.y > 100 &&
-      this._mousePos.y < this.origin.y - this.size.y * 0.9
-    ) {
-      this.scale.setY(this.scale.y - 2);
-      console.log(this.scale.y);
-    }
   }
 
   /**
@@ -84,20 +76,16 @@ export default class Plot {
     const canvasUnitY = unitY * this.scale.y;
 
     const countX = this.size.x / canvasUnitX;
-    ctx.textAlign = "start";
     for (let x = 0; x <= countX; x += 1) {
       const fx = this.origin.x + Math.floor(x * canvasUnitX);
       ctx.moveTo(fx, top);
       ctx.lineTo(fx, this.origin.y);
-      ctx.fillText((x * unitX).toFixed(1), fx, this.origin.y + 10);
     }
     const countY = this.size.y / canvasUnitY;
-    ctx.textAlign = "end";
     for (let y = 0; y <= countY; y += 1) {
       const fy = this.origin.y - Math.floor(y * canvasUnitY);
       ctx.moveTo(this.origin.x, fy);
       ctx.lineTo(right, fy);
-      ctx.fillText((y * unitY).toFixed(1), this.origin.x - 5, fy);
     }
   }
 
@@ -156,19 +144,30 @@ export default class Plot {
     if (this._draggingId >= 0) {
       // 移動先がグラフ上にあるかどうか
       const [x, y] = this.contain(this._mousePos);
-      const p = this._ps.indexOf(this._draggingId);
       // グラフの範囲内で移動させる
       if (x) {
-        p.coord.setX((this._mousePos.x - this.origin.x) / this.scale.x);
+        this._ps.setX(
+          this._draggingId,
+          (this._mousePos.x - this.origin.x) / this.scale.x
+        );
       }
       if (y) {
-        p.coord.setY((this.origin.y - this._mousePos.y) / this.scale.y);
+        this._ps.setY(
+          this._draggingId,
+          (this.origin.y - this._mousePos.y) / this.scale.y
+        );
+        //最大Yをセットする
       }
       this._draggingId = this._ps.sort(this._draggingId);
       // スプライン曲線の再計算
       if (this._spline != undefined) {
         this._spline.x.init(this._ps.xs);
         this._spline.y.init(this._ps.ys);
+      }
+      // 正規分布曲線を再計算
+      if (this._gaussian != undefined) {
+        const p = this._ps.indexOf(0);
+        this._gaussian.inverseCalcOnSd(p.x, p.y);
       }
     }
   }
@@ -198,5 +197,8 @@ export default class Plot {
       this.origin.x < v.x && v.x < edge.x,
       edge.y < v.y && v.y < this.origin.y,
     ];
+  }
+  setScaleX(x: number) {
+    this.scale.x = x;
   }
 }

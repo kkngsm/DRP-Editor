@@ -5,8 +5,19 @@ html
     title DRP Editor
     meta(name='description' content='DRP(diffuse reflectance profile) editor for subsurface scattering')
     script(src="main.js" type="module") 
-    link(rel="stylesheet", href="./css/canvas.css")
+    //- link(rel="stylesheet", href="./css/canvas.css")
   body
     h1 RDP Editor
     .wrapper
       canvas#graph(width="700px", height="500px")
+      ul 
+        li
+          label xのスケール
+            input#scale(type="range" value="100" min="10" max="500" step="1")
+        li 
+          label 曲線タイプ
+            select name="example">
+              option(value="gaussian") 正規分布
+              option(value="spline") 3次スプライン
+
+
