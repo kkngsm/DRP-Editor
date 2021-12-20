@@ -1,36 +1,45 @@
 import { Vector2 } from "three";
+import { CurveType } from "./curve";
+import { CurveRGB, NonePointId, PointId } from "./curveRGB";
 import Gaussian from "./gaussian";
 import { Points } from "./point";
 import { Spline2D } from "./spline";
 
-export type CurveType = "gaussian" | "spline";
-
 export class Plot {
   private _mousePos?: Vector2;
+  private _draggingId: PointId;
+  private _selectedId: PointId;
+
   constructor(
     private canvas: HTMLElement,
     private size: Vector2,
     private origin: Vector2,
     public scale: Vector2,
     private _curve: CurveType,
-    private _spline?: Spline2D,
-    private _gaussian?: Gaussian
+    private _spline?: CurveRGB,
+    private _gaussian?: CurveRGB
   ) {
     this.origin = new Vector2(50, canvas.clientHeight - 50);
+    this._draggingId = NonePointId;
+    this._selectedId = NonePointId;
   }
   /**
    * 3次スプライン曲線を追加する
    * @param ps 3次スプライン曲線のもとになるポイント
    */
-  setSpline(ps: Points) {
-    this._spline = new Spline2D(ps);
+  setSpline(r: Points, g: Points, b: Points) {
+    this._spline = new CurveRGB(
+      new Spline2D(r),
+      new Spline2D(g),
+      new Spline2D(b)
+    );
   }
   /**
    * ガウシアン曲線を追加する
    * @param g ガウシアン曲線のもとにクラス
    */
-  setGausssian(g: Gaussian) {
-    this._gaussian = g;
+  setGausssian(r: Gaussian, g: Gaussian, b: Gaussian) {
+    this._gaussian = new CurveRGB(r, g, b);
   }
 
   /**
@@ -94,13 +103,10 @@ export class Plot {
       this._mousePos.x - this.origin.x,
       this.origin.y - this._mousePos.y
     );
-    switch (this._curve) {
-      case "gaussian":
-        this._gaussian?.mouseHit(m, this.scale);
-        break;
-      case "spline":
-        this._spline?.mouseHit(m, this.scale);
-        break;
+    const c = this[this.modeJudge()];
+    if (c instanceof CurveRGB) {
+      this._selectedId = c.mouseHit(m, this.scale);
+      this._draggingId = this._selectedId;
     }
   }
   /**
@@ -122,20 +128,8 @@ export class Plot {
     const offsetX = this.canvas.getBoundingClientRect().left;
     const offsetY = this.canvas.getBoundingClientRect().top;
     this._mousePos = new Vector2(e.clientX - offsetX, e.clientY - offsetY);
-    this._spline?.move(
-      this._mousePos,
-      this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
-      this.origin,
-      this.scale
-    );
-    this._spline?.init();
-    this._gaussian?.move(
-      this._mousePos,
-      this.contain(this._mousePos), // 移動先がグラフ上にあるかどうか
-      this.origin,
-      this.scale
-    );
-    this._gaussian?.inverseCalcOnSd();
+    this.move();
+    this.reCalc();
   }
 
   mouseLeave() {
@@ -147,8 +141,10 @@ export class Plot {
    * ドラッグを解除するための関数
    */
   draggOff() {
-    this._spline?.dragReset();
-    this._gaussian?.dragReset();
+    this._draggingId = {
+      color: "None",
+      id: -1,
+    };
   }
 
   /**
@@ -156,16 +152,16 @@ export class Plot {
    * @param v: ベクトル
    * @return [x軸で範囲内にあるかどうか, y軸で範囲内にあるかどうか]
    */
-  contain(v: Vector2): boolean[] {
+  contain(v: Vector2): { x: boolean; y: boolean } {
     const edge = new Vector2(
       this.origin.x + this.size.x,
       this.origin.y - this.size.y
     );
 
-    return [
-      this.origin.x < v.x && v.x < edge.x,
-      edge.y < v.y && v.y < this.origin.y,
-    ];
+    return {
+      x: this.origin.x < v.x && v.x < edge.x,
+      y: edge.y < v.y && v.y < this.origin.y,
+    };
   }
   setScaleX(x: number) {
     this.scale.x = x;
@@ -178,11 +174,41 @@ export class Plot {
   }
   convertToSpline() {
     this._curve = "spline";
-    if (this._gaussian != undefined) {
-      const g = <Gaussian>this._gaussian;
-      const xs = [0, 0.6, 1.66, 3, 5].map((e) => e * g.sigma);
-      const ys = xs.map((e) => g.calc(e));
-      this.setSpline(Points.create(xs, ys));
+    if (this._gaussian) {
+      this._spline = CurveRGB.convertToSplineFromGaussian(this._gaussian);
     }
+  }
+  private move() {
+    if (this._draggingId.color == "None") return;
+    if (this._mousePos) {
+      const { x, y }: { x: boolean; y: boolean } = this.contain(this._mousePos);
+      const c = this[this.modeJudge()];
+      if (c instanceof CurveRGB) {
+        if (x) {
+          c.setX(
+            this._draggingId,
+            (this._mousePos.x - this.origin.x) / this.scale.x
+          );
+        }
+        if (y) {
+          c.setY(
+            this._draggingId,
+            (this.origin.y - this._mousePos.y) / this.scale.y
+          );
+        }
+        this._draggingId = <PointId>c.sort(this._draggingId);
+      }
+    }
+  }
+  private reCalc() {
+    const c = this[this.modeJudge()];
+    if (c instanceof CurveRGB) {
+      c.reCalc();
+    }
+  }
+  private modeJudge(): keyof Plot {
+    return this._curve == "spline"
+      ? ("_spline" as keyof Plot)
+      : ("_gaussian" as keyof Plot);
   }
 }

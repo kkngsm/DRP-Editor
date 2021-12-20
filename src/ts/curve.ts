@@ -1,10 +1,14 @@
 import { Vector2 } from "three";
 import { Points } from "./point";
 
+export type Color = "red" | "green" | "blue";
+
 export abstract class Curve {
-  protected _draggingId: number;
-  constructor(protected _ps: Points) {
-    this._draggingId = -1;
+  public color: Color;
+  constructor(protected _ps: Points, col?: Color) {
+    if (col) {
+      this.color = col;
+    }
   }
   abstract draw(
     ctx: CanvasRenderingContext2D,
@@ -12,14 +16,7 @@ export abstract class Curve {
     size: Vector2,
     scale: Vector2
   ): void;
-
-  /**
-   * index番目のPointを非選択
-   * @param index
-   */
-  unselect(index: number) {
-    this._ps.unselect(index);
-  }
+  abstract reCalc(): void;
 
   /**
    * index番目の座標を設定する
@@ -28,6 +25,9 @@ export abstract class Curve {
    */
   set(index: number, coord: Vector2) {
     this._ps.set(index, coord);
+  }
+  setX(index: number, x: number) {
+    this._ps.setX(index, x);
   }
   setY(index: number, y: number) {
     this._ps.setY(index, y);
@@ -54,31 +54,17 @@ export abstract class Curve {
   unselectAll() {
     this._ps.unselectAll();
   }
-  setX(index: number, x: number) {
-    this._ps.setX(index, x);
+
+  get ps(): Points {
+    return this._ps;
   }
-  mouseHit(m: Vector2, scale: Vector2) {
+  mouseHit(m: Vector2, scale: Vector2): number {
     const selectedId = this._ps.mouseHit(m, scale);
-    this._draggingId = selectedId;
     if (selectedId >= 0) {
       this.select(selectedId);
-      console.log(this._ps.indexOf(selectedId));
     }
-  }
-  move(mousePos: Vector2, [x, y]: boolean[], origin: Vector2, scale: Vector2) {
-    if (this._draggingId >= 0) {
-      // グラフの範囲内で移動させる
-      if (x) {
-        this.setX(this._draggingId, (mousePos.x - origin.x) / scale.x);
-      }
-      if (y) {
-        this.setY(this._draggingId, (origin.y - mousePos.y) / scale.y);
-        //最大Yをセットする
-      }
-      this._draggingId = this.sort(this._draggingId);
-    }
-  }
-  dragReset() {
-    this._draggingId = -1;
+    return selectedId;
   }
 }
+
+export type CurveType = "gaussian" | "spline";

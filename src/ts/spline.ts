@@ -1,5 +1,5 @@
 import { Vector2 } from "three";
-import { Curve } from "./curve";
+import { Color, Curve } from "./curve";
 import type { Points } from "./point";
 /**
  * ある軸における3次スプラインの計算
@@ -79,8 +79,8 @@ export class SplineAxis {
 export class Spline2D extends Curve {
   private x: SplineAxis;
   private y: SplineAxis;
-  constructor(ps: Points) {
-    super(ps);
+  constructor(ps: Points, _color?: Color) {
+    super(ps, _color);
     this.x = new SplineAxis(ps.xs);
     this.y = new SplineAxis(ps.ys);
   }
@@ -109,7 +109,7 @@ export class Spline2D extends Curve {
     }
     this._ps.draw(ctx, origin, scale);
   }
-  init() {
+  reCalc() {
     this.x.init(this._ps.xs);
     this.y.init(this._ps.ys);
   }

@@ -1,8 +1,8 @@
 "use strict";
 import { Vector2 } from "three";
+import { CurveType } from "./curve";
 import Gaussian from "./gaussian";
-import { CurveType, Plot } from "./plot";
-import { Points } from "./point";
+import { Plot } from "./plot";
 
 window.onload = () => {
   const canvas = <HTMLCanvasElement>document.getElementById("graph");
@@ -44,8 +44,6 @@ window.onload = () => {
   ctx.shadowColor = "rgb(200, 200, 200)";
   ctx.shadowBlur = 5;
 
-  const g = Gaussian.createFromSdAndMean(1, 0);
-
   const plot = new Plot(
     canvas,
     new Vector2(500, 300),
@@ -54,11 +52,28 @@ window.onload = () => {
     curveType.value as CurveType
   );
 
-  const xs: number[] = [0, 0.6, 1.66, 3, 5];
-  const ys: number[] = xs.map((e) => g.calc(e));
-  const ps = Points.create(xs, ys);
-  plot.setSpline(ps);
-  plot.setGausssian(g);
+  // const xs: number[] = [0, 0.6, 1.66, 3, 5];
+  // const ys: number[] = xs.map((e) => g.calc(e));
+
+  // plot.setSpline(
+  //   Points.create(
+  //     xs,
+  //     xs.map((e) => g.calc(e))
+  //   ),
+  //   Points.create(
+  //     xs,
+  //     xs.map((e) => g.calc(e))
+  //   ),
+  //   Points.create(
+  //     xs,
+  //     xs.map((e) => g.calc(e))
+  //   )
+  // );
+  plot.setGausssian(
+    Gaussian.createFromSdAndMean(1, 0),
+    Gaussian.createFromSdAndMean(0.7, 0),
+    Gaussian.createFromSdAndMean(0.5, 0)
+  );
 
   let then = 0;
   draw(0);

@@ -1,14 +1,14 @@
 import { Vector2 } from "three";
-import { Curve } from "./curve";
+import { Color, Curve } from "./curve";
 import { Point, Points } from "./point";
 
 export default class Gaussian extends Curve {
   private _sigma: number;
   private _mu: number;
-  constructor(p: Point) {
-    super(new Points([p]));
+  constructor(p: Point, _color?: Color) {
+    super(new Points([p]), _color);
     this._mu = 0;
-    this.inverseCalcOnSd();
+    this.reCalc();
   }
 
   static createFromSdAndMean(sigma: number, mu: number): Gaussian {
@@ -28,16 +28,17 @@ export default class Gaussian extends Curve {
    * @param x
    * @param y
    */
-  inverseCalcOnSd(): number | void {
+  reCalc(): number | never {
     const p = this._ps.indexOf(0);
     const s2 = -((p.x - this._mu) ** 2) / (2 * Math.log(p.y));
     if (s2 >= 0) {
       this._sigma = Math.sqrt(s2);
       return this._sigma;
     } else {
-      console.log("this answer is imaginary number");
+      throw new Error("this answer is imaginary number");
     }
   }
+
   /**
    * 正規分布を描画する
    */
