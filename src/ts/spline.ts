@@ -96,6 +96,8 @@ export class Spline2D extends Curve {
     size: Vector2,
     scale: Vector2
   ): void {
+    ctx.strokeStyle = this.color ? this.color : "black";
+    ctx.beginPath();
     ctx.moveTo(
       origin.x + this.x.calc(0) * scale.x,
       origin.y - this.y.calc(0) * scale.y
@@ -107,7 +109,8 @@ export class Spline2D extends Curve {
         origin.y - this.y.calc(t) * scale.y
       );
     }
-    this._ps.draw(ctx, origin, scale);
+    ctx.stroke();
+    this._ps.draw(ctx, origin, scale, this.color);
   }
   reCalc() {
     this.x.init(this._ps.xs);

@@ -48,12 +48,15 @@ export default class Gaussian extends Curve {
     size: Vector2,
     scale: Vector2
   ) {
+    ctx.strokeStyle = this.color ? this.color : "black";
+    ctx.beginPath();
     ctx.moveTo(origin.x, origin.y - this.calc(0) * scale.y);
     const maxX = size.x / scale.x;
     for (let t = 0.1; t <= maxX; t += 0.1) {
       ctx.lineTo(origin.x + t * scale.x, origin.y - this.calc(t) * scale.y);
     }
-    this._ps.draw(ctx, origin, scale);
+    ctx.stroke();
+    this._ps.draw(ctx, origin, scale, this.color);
   }
   get sigma() {
     return this._sigma;

@@ -49,7 +49,8 @@ export class Plot {
   draw(ctx: CanvasRenderingContext2D) {
     const h = this.canvas.clientHeight;
     ctx.clearRect(0, 0, this.canvas.clientWidth, h);
-    ctx.beginPath();
+    this.drawTick(ctx);
+
     switch (this._curve) {
       case "gaussian":
         this._gaussian?.draw(ctx, this.origin, this.size, this.scale);
@@ -58,8 +59,6 @@ export class Plot {
         this._spline?.draw(ctx, this.origin, this.size, this.scale);
         break;
     }
-    this.drawTick(ctx);
-    ctx.stroke();
   }
 
   /**
@@ -69,6 +68,8 @@ export class Plot {
   private drawTick(ctx: CanvasRenderingContext2D) {
     const top = this.origin.y - this.size.y;
     const right = this.size.x + this.origin.x;
+    ctx.beginPath();
+    ctx.strokeStyle = "black";
     ctx.moveTo(this.origin.x, top);
     ctx.lineTo(this.origin.x, this.origin.y);
     ctx.lineTo(right, this.origin.y);
@@ -90,6 +91,7 @@ export class Plot {
       ctx.moveTo(this.origin.x, fy);
       ctx.lineTo(right, fy);
     }
+    ctx.stroke();
   }
 
   /**

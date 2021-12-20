@@ -1,4 +1,5 @@
 import { Vector2 } from "three";
+import { Color } from "./curve";
 
 /**グラフにおける一つのデータ */
 export class Point {
@@ -16,9 +17,14 @@ export class Point {
    * @param origin 原点の位置
    * @param scale 拡大率
    */
-  draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    origin: Vector2,
+    scale: Vector2,
+    color: Color
+  ) {
     if (this._isSelected) {
-      ctx.fillStyle = "red";
+      ctx.fillStyle = color;
     } else {
       ctx.fillStyle = "black";
     }
@@ -100,9 +106,14 @@ export class Points {
    * @param origin 原点
    * @param scale 拡大率
    */
-  draw(ctx: CanvasRenderingContext2D, origin: Vector2, scale: Vector2) {
+  draw(
+    ctx: CanvasRenderingContext2D,
+    origin: Vector2,
+    scale: Vector2,
+    color: Color
+  ) {
     this.ps.forEach((e) => {
-      e.draw(ctx, origin, scale);
+      e.draw(ctx, origin, scale, color);
     });
   }
   /**
