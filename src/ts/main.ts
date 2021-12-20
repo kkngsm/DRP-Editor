@@ -1,15 +1,15 @@
 "use strict";
 import { Vector2 } from "three";
-import { CurveType } from "./curve";
-import Gaussian from "./gaussian";
-import { Plot } from "./plot";
+import { CurveType } from "./graphEditor/curve";
+import Gaussian from "./graphEditor/gaussian";
+import { Plot } from "./graphEditor/plot";
 
 window.onload = () => {
-  const canvas = <HTMLCanvasElement>document.getElementById("graph");
-  canvas.addEventListener("mousedown", () => plot.onDown());
-  canvas.addEventListener("mouseup", () => plot.draggOff());
-  canvas.addEventListener("mousemove", (e) => plot.onMove(e));
-  canvas.addEventListener("mouseleave", () => plot.mouseLeave());
+  const graph = <HTMLCanvasElement>document.getElementById("graph");
+  graph.addEventListener("mousedown", () => plot.onDown());
+  graph.addEventListener("mouseup", () => plot.draggOff());
+  graph.addEventListener("mousemove", (e) => plot.onMove(e));
+  graph.addEventListener("mouseleave", () => plot.mouseLeave());
 
   const scale = <HTMLInputElement>document.getElementById("scale");
   scale.addEventListener("input", () => {
@@ -34,41 +34,24 @@ window.onload = () => {
     plot.convertToSpline();
     curveType.value = "spline";
   });
-  const ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
+  const graphCtx = <CanvasRenderingContext2D>graph.getContext("2d");
 
-  ctx.lineWidth = 2;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.shadowOffsetX = 5;
-  ctx.shadowOffsetY = 5;
-  ctx.shadowColor = "rgb(200, 200, 200)";
-  ctx.shadowBlur = 5;
+  graphCtx.lineWidth = 2;
+  graphCtx.lineCap = "round";
+  graphCtx.lineJoin = "round";
+  graphCtx.shadowOffsetX = 5;
+  graphCtx.shadowOffsetY = 5;
+  graphCtx.shadowColor = "rgb(200, 200, 200)";
+  graphCtx.shadowBlur = 5;
 
   const plot = new Plot(
-    canvas,
+    graph,
     new Vector2(500, 300),
     new Vector2(20, 20),
     new Vector2(100, 300),
     curveType.value as CurveType
   );
 
-  // const xs: number[] = [0, 0.6, 1.66, 3, 5];
-  // const ys: number[] = xs.map((e) => g.calc(e));
-
-  // plot.setSpline(
-  //   Points.create(
-  //     xs,
-  //     xs.map((e) => g.calc(e))
-  //   ),
-  //   Points.create(
-  //     xs,
-  //     xs.map((e) => g.calc(e))
-  //   ),
-  //   Points.create(
-  //     xs,
-  //     xs.map((e) => g.calc(e))
-  //   )
-  // );
   plot.setGausssian(
     Gaussian.createFromSdAndMean(1, 0),
     Gaussian.createFromSdAndMean(0.7, 0),
@@ -82,7 +65,7 @@ window.onload = () => {
     const deltaTime = now - then; // compute time since last frame
     then = now;
     // console.log(1 / deltaTime);
-    plot.draw(ctx);
+    plot.draw(graphCtx);
     requestAnimationFrame((time) => draw(time));
   }
 };
