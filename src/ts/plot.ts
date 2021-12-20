@@ -178,9 +178,11 @@ export class Plot {
   }
   convertToSpline() {
     this._curve = "spline";
-    if (this._gaussian == undefined) return;
-    const xs = [0, 0.6, 1.66, 3, 5].map((e) => e * this._gaussian.sigma);
-    const ys = xs.map((e) => this._gaussian.calc(e));
-    this.setSpline(Points.create(xs, ys));
+    if (this._gaussian != undefined) {
+      const g = <Gaussian>this._gaussian;
+      const xs = [0, 0.6, 1.66, 3, 5].map((e) => e * g.sigma);
+      const ys = xs.map((e) => g.calc(e));
+      this.setSpline(Points.create(xs, ys));
+    }
   }
 }
