@@ -65,7 +65,6 @@ export class CurveRGB {
     });
   }
   setX(id: PointId, y: number): void {
-    console.log(id.color != "None");
     if (id.color != "None") {
       const curve = this[id.color as keyof CurveRGB];
       if (curve instanceof Spline2D || curve instanceof Gaussian) {

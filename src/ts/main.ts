@@ -3,8 +3,10 @@ import { Vector2 } from "three";
 import { CurveType } from "./graphEditor/curve";
 import Gaussian from "./graphEditor/gaussian";
 import { Plot } from "./graphEditor/plot";
+import Render from "./render/render";
 
 window.onload = () => {
+  const render = <HTMLCanvasElement>document.getElementById("render");
   const graph = <HTMLCanvasElement>document.getElementById("graph");
   graph.addEventListener("mousedown", () => plot.onDown());
   graph.addEventListener("mouseup", () => plot.draggOff());
@@ -34,6 +36,8 @@ window.onload = () => {
     plot.convertToSpline();
     curveType.value = "spline";
   });
+
+  new Render(render);
   const graphCtx = <CanvasRenderingContext2D>graph.getContext("2d");
 
   graphCtx.lineWidth = 2;
