@@ -6,7 +6,7 @@ import { Plot } from "./graphEditor/plot";
 import Render from "./render/render";
 
 window.onload = () => {
-  const render = <HTMLCanvasElement>document.getElementById("render");
+  const preview = <HTMLCanvasElement>document.getElementById("preview");
   const graph = <HTMLCanvasElement>document.getElementById("graph");
   graph.addEventListener("mousedown", () => plot.onDown());
   graph.addEventListener("mouseup", () => plot.draggOff());
@@ -37,7 +37,7 @@ window.onload = () => {
     curveType.value = "spline";
   });
 
-  new Render(render);
+  const render = new Render(preview);
   const graphCtx = <CanvasRenderingContext2D>graph.getContext("2d");
 
   graphCtx.lineWidth = 2;
@@ -70,6 +70,7 @@ window.onload = () => {
     then = now;
     // console.log(1 / deltaTime);
     plot.draw(graphCtx);
+    render.draw();
     requestAnimationFrame((time) => draw(time));
   }
 };
