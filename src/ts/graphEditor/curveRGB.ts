@@ -147,4 +147,22 @@ export class CurveRGB {
     }
     return NonePointId;
   }
+  getWeight(size: number): number[] | undefined {
+    if (
+      this._red instanceof Gaussian &&
+      this._green instanceof Gaussian &&
+      this._blue instanceof Gaussian
+    ) {
+      const r = this._red.getWeight(size);
+      const g = this._green.getWeight(size);
+      const b = this._blue.getWeight(size);
+      const result = new Array(size * 3);
+      for (let i = 0; i < size; i++) {
+        result[i * 3] = r[i];
+        result[i * 3 + 1] = g[i];
+        result[i * 3 + 2] = b[i];
+      }
+      return result;
+    }
+  }
 }

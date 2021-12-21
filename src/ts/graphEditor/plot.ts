@@ -213,4 +213,8 @@ export class Plot {
       ? ("_spline" as keyof Plot)
       : ("_gaussian" as keyof Plot);
   }
+
+  getWeight(size: number): number[] | undefined {
+    return this._gaussian?.getWeight(size);
+  }
 }

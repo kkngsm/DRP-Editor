@@ -70,7 +70,7 @@ window.onload = () => {
     then = now;
     // console.log(1 / deltaTime);
     plot.draw(graphCtx);
-    render.draw();
+    render.draw(<number[]>plot.getWeight(10));
     requestAnimationFrame((time) => draw(time));
   }
 };

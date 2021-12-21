@@ -61,4 +61,13 @@ export default class Gaussian extends Curve {
   get sigma() {
     return this._sigma;
   }
+  getWeight(size: number) {
+    const array = new Array(size).fill(0);
+
+    const result = array.map((e, i) => this.calc(i));
+    const sum = result.reduce((sum, element) => sum + element, 0);
+
+    const normalized = result.map((e) => e / sum);
+    return normalized;
+  }
 }

@@ -17,6 +17,7 @@ export default class Render {
   private _uniforms: { [uniform: string]: IUniform };
   private _scene: Scene;
   private _camera: OrthographicCamera;
+  private _material: ShaderMaterial;
   constructor(canvas: HTMLCanvasElement) {
     this._renderer = new WebGLRenderer({ canvas: canvas });
 
@@ -31,20 +32,27 @@ export default class Render {
       screenWidth: <IUniform>{ type: "f", value: canvas.clientWidth },
       screenHeight: <IUniform>{ type: "f", value: canvas.clientHeight },
       tex: <IUniform>{ type: "t", value: this.texture() },
-      col: <IUniform>{ type: "f", value: 0.5 },
+      horizontal: <IUniform>{ type: "b", value: true },
+      weight: <IUniform>{ type: "fv", value: undefined },
     };
 
-    const mat = new ShaderMaterial({
-      uniforms: this._uniforms,
-      vertexShader: vs,
-      fragmentShader: fs,
-      glslVersion: GLSL3,
-    });
+    this.compileShader(10);
 
-    const mesh = new Mesh(plane, mat);
+    const mesh = new Mesh(plane, this._material);
     this._scene.add(mesh);
   }
-  draw() {
+  compileShader(size: number) {
+    this._material = new ShaderMaterial({
+      uniforms: this._uniforms,
+      vertexShader: vs,
+      fragmentShader: `#define SIZE ${size}\n${fs}`,
+      glslVersion: GLSL3,
+    });
+    this._renderer.compile(this._scene, this._camera);
+  }
+  draw(weight: number[]) {
+    this._uniforms.weight.value = weight;
+
     this._renderer.setRenderTarget(null);
     this._renderer.clear();
     this._renderer.render(this._scene, this._camera);
