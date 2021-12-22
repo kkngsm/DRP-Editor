@@ -37,7 +37,16 @@ window.onload = () => {
     curveType.value = "spline";
   });
 
-  const render = new Render(preview);
+  const kernelSizeSelect = <HTMLSelectElement>(
+    document.getElementById("kernelSize")
+  );
+  let kernelSize = Number(kernelSizeSelect.value);
+
+  kernelSizeSelect.addEventListener("change", () => {
+    kernelSize = Number(kernelSizeSelect.value);
+  });
+
+  const render = new Render(preview, Number(kernelSizeSelect.value));
   const graphCtx = <CanvasRenderingContext2D>graph.getContext("2d");
 
   graphCtx.lineWidth = 2;
@@ -70,7 +79,7 @@ window.onload = () => {
     then = now;
     // console.log(1 / deltaTime);
     plot.draw(graphCtx);
-    render.draw(<number[]>plot.getWeight(10));
+    render.draw(<number[]>plot.getWeight(kernelSize));
     requestAnimationFrame((time) => draw(time));
   }
 };
