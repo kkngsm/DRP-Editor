@@ -13,10 +13,6 @@ window.onload = () => {
   graph.addEventListener("mousemove", (e) => plot.onMove(e));
   graph.addEventListener("mouseleave", () => plot.mouseLeave());
 
-  const scale = <HTMLInputElement>document.getElementById("scale");
-  scale.addEventListener("input", () => {
-    plot.setScaleX(Number(scale.value));
-  });
   const curveType = <HTMLSelectElement>document.getElementById("curveType");
   curveType.addEventListener("change", () => {
     switch (curveType.value) {
@@ -44,6 +40,7 @@ window.onload = () => {
 
   kernelSizeSelect.addEventListener("change", () => {
     kernelSize = Number(kernelSizeSelect.value);
+    plot.setScaleX(500 / kernelSize);
   });
 
   const render = new Render(preview);
@@ -61,7 +58,7 @@ window.onload = () => {
     graph,
     new Vector2(500, 300),
     new Vector2(20, 20),
-    new Vector2(100, 300),
+    new Vector2(500 / kernelSize, 300),
     curveType.value as CurveType
   );
 
