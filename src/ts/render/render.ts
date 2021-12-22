@@ -18,7 +18,7 @@ export default class Render {
   private _scene: Scene;
   private _camera: OrthographicCamera;
   private _mesh: Mesh;
-  constructor(canvas: HTMLCanvasElement, kernelSize: number) {
+  constructor(canvas: HTMLCanvasElement) {
     this._renderer = new WebGLRenderer({ canvas: canvas });
 
     this._scene = new Scene();
@@ -34,34 +34,25 @@ export default class Render {
       tex: <IUniform>{ type: "t", value: this.texture() },
       horizontal: <IUniform>{ type: "b", value: true },
       weight: <IUniform>{ type: "fv", value: undefined },
+      kernelSize: <IUniform>{ type: "i", value: undefined },
     };
 
     const material = new ShaderMaterial({
       uniforms: this._uniforms,
       vertexShader: vs,
-      fragmentShader: `#define SIZE ${kernelSize}\n${fs}`,
+      fragmentShader: fs,
       glslVersion: GLSL3,
     });
 
     this._mesh = new Mesh(plane, material);
     this._scene.add(this._mesh);
   }
-
-  draw(weight: number[]) {
+  draw(weight: number[], kernelSize: number) {
     this._uniforms.weight.value = weight;
-
+    this._uniforms.kernelSize.value = kernelSize;
     this._renderer.setRenderTarget(null);
     this._renderer.clear();
     this._renderer.render(this._scene, this._camera);
-  }
-  setKernelSize(size: number) {
-    this._mesh.material = new ShaderMaterial({
-      uniforms: this._uniforms,
-      vertexShader: vs,
-      fragmentShader: `#define SIZE ${size};\n${fs}`,
-      glslVersion: GLSL3,
-    });
-    this._renderer.compile(this._scene, this._camera);
   }
   private texture(): CanvasTexture {
     const canvas = document.createElement("canvas");

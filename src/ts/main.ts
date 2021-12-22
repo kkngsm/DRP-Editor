@@ -46,7 +46,7 @@ window.onload = () => {
     kernelSize = Number(kernelSizeSelect.value);
   });
 
-  const render = new Render(preview, Number(kernelSizeSelect.value));
+  const render = new Render(preview);
   const graphCtx = <CanvasRenderingContext2D>graph.getContext("2d");
 
   graphCtx.lineWidth = 2;
@@ -79,7 +79,10 @@ window.onload = () => {
     then = now;
     // console.log(1 / deltaTime);
     plot.draw(graphCtx);
-    render.draw(<number[]>plot.getWeight(kernelSize));
+    render.draw(
+      <number[]>plot.getWeight(kernelSize),
+      Number(kernelSizeSelect.value)
+    );
     requestAnimationFrame((time) => draw(time));
   }
 };
