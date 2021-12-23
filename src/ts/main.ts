@@ -3,10 +3,10 @@ import { Vector2 } from "three";
 import { CurveType } from "./graphEditor/curve";
 import Gaussian from "./graphEditor/gaussian";
 import { Plot } from "./graphEditor/plot";
-import Render from "./render/render";
+import ColorRamp from "./preview/colorramp";
+import Previewer from "./preview/preview";
 
 window.onload = () => {
-  const preview = <HTMLCanvasElement>document.getElementById("preview");
   const graph = <HTMLCanvasElement>document.getElementById("graph");
   graph.addEventListener("mousedown", () => plot.onDown());
   graph.addEventListener("mouseup", () => plot.draggOff());
@@ -43,7 +43,8 @@ window.onload = () => {
     plot.setScaleX(500 / kernelSize);
   });
 
-  const render = new Render(preview);
+  const previewer = new Previewer(500, 150);
+  const colorramp = new ColorRamp(500, 100);
   const graphCtx = <CanvasRenderingContext2D>graph.getContext("2d");
 
   graphCtx.lineWidth = 2;
@@ -76,10 +77,11 @@ window.onload = () => {
     then = now;
     // console.log(1 / deltaTime);
     plot.draw(graphCtx);
-    render.draw(
-      <number[]>plot.getWeight(kernelSize),
-      Number(kernelSizeSelect.value)
-    );
+    const kernelWeight = <number[]>plot.getWeight(kernelSize);
+    previewer.draw(kernelWeight, kernelSize);
+    colorramp.draw(kernelWeight, kernelSize);
+    graphCtx.drawImage(previewer.domElement, 10, 10);
+    graphCtx.drawImage(colorramp.domElement, 10, 200);
     requestAnimationFrame((time) => draw(time));
   }
 };

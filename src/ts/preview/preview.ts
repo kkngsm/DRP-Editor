@@ -16,7 +16,7 @@ import {
 import fs from "./glsl/sss.frag";
 import vs from "./glsl/vertexShader.vert";
 
-export default class Render {
+export default class Previewer {
   private _renderer: WebGLRenderer;
   private _uniforms: { [uniform: string]: IUniform };
   private _scene: Scene;
@@ -24,8 +24,9 @@ export default class Render {
   private _mesh: Mesh;
   private _rawImage: CanvasTexture;
   private _tempImage: WebGLRenderTarget;
-  constructor(canvas: HTMLCanvasElement) {
-    this._renderer = new WebGLRenderer({ canvas: canvas });
+  constructor(width: number, height: number) {
+    this._renderer = new WebGLRenderer();
+    this._renderer.setSize(width, height);
 
     this._scene = new Scene();
     this._camera = new OrthographicCamera(-0.5, 0.5, 0.5, -0.5, -10000, 10000);
@@ -34,10 +35,9 @@ export default class Render {
 
     const plane = new PlaneGeometry(1.0, 1.0);
 
-    const { clientWidth, clientHeight } = canvas;
     this._uniforms = {
-      screenWidth: <IUniform>{ type: "f", value: clientWidth },
-      screenHeight: <IUniform>{ type: "f", value: clientHeight },
+      screenWidth: <IUniform>{ type: "f", value: width },
+      screenHeight: <IUniform>{ type: "f", value: height },
       tex: <IUniform>{ type: "t", value: undefined },
       horizontal: <IUniform>{ type: "b", value: true },
       weight: <IUniform>{ type: "fv", value: undefined },
@@ -45,7 +45,7 @@ export default class Render {
     };
 
     this._rawImage = this.texture();
-    this._tempImage = new WebGLRenderTarget(clientWidth, clientHeight, {
+    this._tempImage = new WebGLRenderTarget(width, height, {
       minFilter: LinearFilter,
       magFilter: LinearFilter,
       format: RGBAFormat,
@@ -88,5 +88,9 @@ export default class Render {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width * 0.5, canvas.height);
     return new CanvasTexture(canvas);
+  }
+
+  get domElement(): HTMLCanvasElement {
+    return this._renderer.domElement;
   }
 }
