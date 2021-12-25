@@ -9,15 +9,27 @@ export class Plot {
   private _mousePos?: Vector2;
   private _draggingId: PointId;
   private _selectedId: PointId;
-
+  private size: Vector2;
+  private scale: Vector2;
+  private ctx: CanvasRenderingContext2D;
+  private _spline?: CurveRGB;
+  private _gaussian?: CurveRGB;
   constructor(
-    private canvas: HTMLElement,
-    private size: Vector2,
-    public scale: Vector2,
-    private _curve: CurveType,
-    private _spline?: CurveRGB,
-    private _gaussian?: CurveRGB
+    private canvas: HTMLCanvasElement,
+    kernelSize: number,
+    private _curve: CurveType
   ) {
+    this.ctx = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+
+    this.size = new Vector2(500, 300);
+
+    this.ctx.lineWidth = 2;
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
+    this.canvas.width = this.size.x;
+    this.canvas.height = this.size.y;
+    this.scale = new Vector2(500 / kernelSize, 300);
+
     this._draggingId = NonePointId;
     this._selectedId = NonePointId;
   }
@@ -42,19 +54,16 @@ export class Plot {
 
   /**
    * キャンバスにグラフを描画する
-   * @param ctx 描画するキャンバスの2Dコンテキスト
    */
-  draw(ctx: CanvasRenderingContext2D) {
-    const h = this.canvas.clientHeight;
-    ctx.clearRect(0, 0, this.canvas.clientWidth, h);
-    this.drawTick(ctx);
-
+  draw() {
+    this.ctx.clearRect(0, 0, this.size.x, this.size.y);
+    this.drawTick();
     switch (this._curve) {
       case "gaussian":
-        this._gaussian?.draw(ctx, this.size, this.scale);
+        this._gaussian?.draw(this.ctx, this.size, this.scale);
         break;
       case "spline":
-        this._spline?.draw(ctx, this.size, this.scale);
+        this._spline?.draw(this.ctx, this.size, this.scale);
         break;
     }
   }
@@ -63,14 +72,14 @@ export class Plot {
    * メモリを描画する
    * @param ctx 描画するキャンバスの2Dコンテキスト
    */
-  private drawTick(ctx: CanvasRenderingContext2D) {
+  private drawTick() {
     const top = this.size.y - this.size.y;
     const right = this.size.x;
-    ctx.beginPath();
-    ctx.strokeStyle = "black";
-    ctx.moveTo(0, top);
-    ctx.lineTo(0, this.size.y);
-    ctx.lineTo(right, this.size.y);
+    this.ctx.beginPath();
+    this.ctx.strokeStyle = "black";
+    this.ctx.moveTo(0, top);
+    this.ctx.lineTo(0, this.size.y);
+    this.ctx.lineTo(right, this.size.y);
 
     const unitX = 1;
     const unitY = 0.1;
@@ -80,16 +89,16 @@ export class Plot {
     const countX = this.size.x / canvasUnitX;
     for (let x = 0; x <= countX; x += 1) {
       const fx = Math.floor(x * canvasUnitX);
-      ctx.moveTo(fx, top);
-      ctx.lineTo(fx, this.size.y);
+      this.ctx.moveTo(fx, top);
+      this.ctx.lineTo(fx, this.size.y);
     }
     const countY = this.size.y / canvasUnitY;
     for (let y = 0; y <= countY; y += 1) {
       const fy = this.size.y - Math.floor(y * canvasUnitY);
-      ctx.moveTo(0, fy);
-      ctx.lineTo(right, fy);
+      this.ctx.moveTo(0, fy);
+      this.ctx.lineTo(right, fy);
     }
-    ctx.stroke();
+    this.ctx.stroke();
   }
 
   /**
@@ -205,5 +214,9 @@ export class Plot {
 
   getWeight(size: number): rgbWeight | undefined {
     return this._gaussian?.getWeight(size);
+  }
+
+  get domElement(): HTMLCanvasElement {
+    return this.canvas;
   }
 }
