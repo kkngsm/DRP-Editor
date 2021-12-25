@@ -10,13 +10,12 @@ export class Plot {
   private _draggingId: PointId;
   private _selectedId: PointId;
   private size: Vector2;
-  private scale: Vector2;
   private ctx: CanvasRenderingContext2D;
   private _spline?: CurveRGB;
   private _gaussian?: CurveRGB;
   constructor(
     private canvas: HTMLCanvasElement,
-    kernelSize: number,
+    private _kernelSize: number,
     private _curve: CurveType
   ) {
     this.ctx = <CanvasRenderingContext2D>this.canvas.getContext("2d");
@@ -28,7 +27,6 @@ export class Plot {
     this.ctx.lineJoin = "round";
     this.canvas.width = this.size.x;
     this.canvas.height = this.size.y;
-    this.scale = new Vector2(500 / kernelSize, 300);
 
     this._draggingId = NonePointId;
     this._selectedId = NonePointId;
@@ -60,10 +58,10 @@ export class Plot {
     this.drawTick();
     switch (this._curve) {
       case "gaussian":
-        this._gaussian?.draw(this.ctx, this.size, this.scale);
+        this._gaussian?.draw(this.ctx, this.size);
         break;
       case "spline":
-        this._spline?.draw(this.ctx, this.size, this.scale);
+        this._spline?.draw(this.ctx, this.size);
         break;
     }
   }
@@ -81,20 +79,16 @@ export class Plot {
     this.ctx.lineTo(0, this.size.y);
     this.ctx.lineTo(right, this.size.y);
 
-    const unitX = 1;
-    const unitY = 0.1;
-    const canvasUnitX = unitX * this.scale.x;
-    const canvasUnitY = unitY * this.scale.y;
-
-    const countX = this.size.x / canvasUnitX;
+    const unit = new Vector2().copy(this.size).divideScalar(this._kernelSize);
+    const countX = this.size.x / unit.x;
     for (let x = 0; x <= countX; x += 1) {
-      const fx = Math.floor(x * canvasUnitX);
+      const fx = Math.floor(x * unit.x);
       this.ctx.moveTo(fx, top);
       this.ctx.lineTo(fx, this.size.y);
     }
-    const countY = this.size.y / canvasUnitY;
+    const countY = this.size.y / unit.y;
     for (let y = 0; y <= countY; y += 1) {
-      const fy = this.size.y - Math.floor(y * canvasUnitY);
+      const fy = this.size.y - Math.floor(y * unit.y);
       this.ctx.moveTo(0, fy);
       this.ctx.lineTo(right, fy);
     }
@@ -111,7 +105,7 @@ export class Plot {
     const m = new Vector2(this._mousePos.x, this.size.y - this._mousePos.y);
     const c = this[this.modeJudge()];
     if (c instanceof CurveRGB) {
-      this._selectedId = c.mouseHit(m, this.scale);
+      this._selectedId = c.mouseHit(m, this.size);
       this._draggingId = this._selectedId;
     }
   }
@@ -166,8 +160,8 @@ export class Plot {
       y: edge.y < v.y && v.y < this.size.y,
     };
   }
-  setScaleX(x: number) {
-    this.scale.x = x;
+  setKernelSize(x: number) {
+    this._kernelSize = x;
   }
   changeGaussian() {
     this._curve = "gaussian";
@@ -188,12 +182,12 @@ export class Plot {
       const c = this[this.modeJudge()];
       if (c instanceof CurveRGB) {
         if (x) {
-          c.setX(this._draggingId, this._mousePos.x / this.scale.x);
+          c.setX(this._draggingId, this._mousePos.x / this.size.x);
         }
         if (y) {
           c.setY(
             this._draggingId,
-            (this.size.y - this._mousePos.y) / this.scale.y
+            (this.size.y - this._mousePos.y) / this.size.y
           );
         }
         this._draggingId = <PointId>c.sort(this._draggingId);

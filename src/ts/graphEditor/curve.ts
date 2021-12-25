@@ -10,11 +10,7 @@ export abstract class Curve {
       this.color = col;
     }
   }
-  abstract draw(
-    ctx: CanvasRenderingContext2D,
-    size: Vector2,
-    scale: Vector2
-  ): void;
+  abstract draw(ctx: CanvasRenderingContext2D, size: Vector2): void;
   abstract reCalc(): void;
 
   /**

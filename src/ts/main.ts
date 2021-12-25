@@ -41,7 +41,7 @@ window.onload = () => {
 
   kernelSizeSelect.addEventListener("change", () => {
     kernelSize = Number(kernelSizeSelect.value);
-    plot.setScaleX(500 / kernelSize);
+    plot.setKernelSize(kernelSize);
   });
 
   const previewer = new Previewer(500, 150);
@@ -50,9 +50,9 @@ window.onload = () => {
   const plot = new Plot(graph, kernelSize, curveType.value as CurveType);
 
   plot.setGausssian(
-    Gaussian.createFromSdAndMean(1, 0),
-    Gaussian.createFromSdAndMean(0.7, 0),
-    Gaussian.createFromSdAndMean(0.5, 0)
+    Gaussian.createFromSdAndMean(0.5, 0),
+    Gaussian.createFromSdAndMean(0.25, 0),
+    Gaussian.createFromSdAndMean(0.1, 0)
   );
 
   let then = 0;

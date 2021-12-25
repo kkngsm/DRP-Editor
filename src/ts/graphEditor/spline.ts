@@ -90,10 +90,10 @@ export class Spline2D extends Curve {
    * @param ctx 描画先の2Dコンテキスト
    * @param scale 拡大率
    */
-  draw(ctx: CanvasRenderingContext2D, size: Vector2, scale: Vector2): void {
+  draw(ctx: CanvasRenderingContext2D, size: Vector2): void {
     ctx.strokeStyle = this.color ? this.color : "black";
     ctx.beginPath();
-    ctx.moveTo(0 + this.x.calc(0) * scale.x, size.y - this.y.calc(0) * scale.y);
+    ctx.moveTo(0 + this.x.calc(0) * size.x, size.y - this.y.calc(0) * size.y);
     const num = this.x.num - 0.15;
     const prevX = -0.1;
     for (let t = 0.15; t <= num; t += 0.15) {
@@ -102,16 +102,16 @@ export class Spline2D extends Curve {
       // if (prevX >= x) {
       //   this.err = true;
       // }
-      ctx.lineTo(x * scale.x, size.y - y * scale.y);
+      ctx.lineTo(x * size.x, size.y - y * size.y);
     }
     const prevPos = new Vector2(
       this.x.calc(num + 0.1),
       this.y.calc(num + 0.1)
-    ).multiply(scale);
+    ).multiply(size);
     const lastpos = new Vector2(
       this.x.calc(num + 0.2),
       this.y.calc(num + 0.2)
-    ).multiply(scale);
+    ).multiply(size);
 
     ctx.lineTo(prevPos.x, size.y - prevPos.y);
 
@@ -121,7 +121,7 @@ export class Spline2D extends Curve {
     ctx.lineTo(size.x, size.y - (prevPos.y + (remain / diff.x) * diff.y));
 
     ctx.stroke();
-    this._ps.draw(ctx, size, scale, this.color);
+    this._ps.draw(ctx, size, this.color);
   }
   reCalc() {
     this.x.init(this._ps.xs);

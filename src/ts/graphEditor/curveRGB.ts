@@ -51,11 +51,11 @@ export class CurveRGB {
       }
     });
   }
-  draw(ctx: CanvasRenderingContext2D, size: Vector2, scale: Vector2) {
+  draw(ctx: CanvasRenderingContext2D, size: Vector2) {
     RGB.forEach((e) => {
       const curve = this[e];
       if (curve instanceof Spline2D || curve instanceof Gaussian) {
-        curve.draw(ctx, size, scale);
+        curve.draw(ctx, size);
       }
     });
   }
