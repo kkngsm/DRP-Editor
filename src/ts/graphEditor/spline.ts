@@ -79,7 +79,7 @@ export class SplineAxis {
 export class Spline2D extends Curve {
   private x: SplineAxis;
   private y: SplineAxis;
-  private err: boolean;
+  private data: Vector2[];
   constructor(ps: Points, _color?: Color) {
     super(ps, _color);
     this.x = new SplineAxis(ps.xs);
@@ -94,32 +94,42 @@ export class Spline2D extends Curve {
     ctx.strokeStyle = this.color ? this.color : "black";
     ctx.beginPath();
     ctx.moveTo(0 + this.x.calc(0) * size.x, size.y - this.y.calc(0) * size.y);
+
+    this.data = [];
+    let isOver = false;
     const num = this.x.num - 0.15;
-    const prevX = -0.1;
-    for (let t = 0.15; t <= num; t += 0.15) {
+    for (let t = 0.2; t <= num; t += 0.2) {
       const x = this.x.calc(t);
       const y = this.y.calc(t);
-      // if (prevX >= x) {
-      //   this.err = true;
-      // }
       ctx.lineTo(x * size.x, size.y - y * size.y);
+      this.data.push(new Vector2(x, y));
+      if (x > 1) {
+        isOver = true;
+        break;
+      }
     }
-    const prevPos = new Vector2(
-      this.x.calc(num + 0.1),
-      this.y.calc(num + 0.1)
-    ).multiply(size);
-    const lastpos = new Vector2(
-      this.x.calc(num + 0.2),
-      this.y.calc(num + 0.2)
-    ).multiply(size);
+    if (!isOver) {
+      const prevPos = new Vector2(
+        this.x.calc(num + 0.1),
+        this.y.calc(num + 0.1)
+      );
+      const lastPos = new Vector2(
+        this.x.calc(num + 0.2),
+        this.y.calc(num + 0.2)
+      );
+      this.data.push(prevPos);
 
-    ctx.lineTo(prevPos.x, size.y - prevPos.y);
+      const diff = new Vector2().subVectors(lastPos, prevPos);
+      const remain = 1 - prevPos.x;
 
-    const diff = new Vector2().subVectors(lastpos, prevPos);
-    const remain = size.x - prevPos.x;
-
-    ctx.lineTo(size.x, size.y - (prevPos.y + (remain / diff.x) * diff.y));
-
+      ctx.lineTo(prevPos.x * size.x, size.y * (1 - prevPos.y));
+      const rightEnd = new Vector2(
+        1,
+        1 - prevPos.y - (remain / diff.x) * diff.y
+      );
+      this.data.push(rightEnd);
+      ctx.lineTo(size.x, size.y * rightEnd.y);
+    }
     ctx.stroke();
     this._ps.draw(ctx, size, this.color);
   }
@@ -127,12 +137,28 @@ export class Spline2D extends Curve {
     this.x.init(this._ps.xs);
     this.y.init(this._ps.ys);
   }
-  // getWeight(size: number) {
-  //   const unit = 1 / size;
-  //   const len = this.reslut.length;
-  //   for (let i = 0; i < len; i++){
-  //     const this.reslut
-  //   }
-  //   return;
-  // }
+  getWeight(size: number): number[] | undefined {
+    const xs: number[] = new Array(size).fill(0).map((_, i) => i / size);
+    const ys: number[] = [1];
+    let xsIndex = 1;
+    for (let dataIndex = 0; dataIndex < this.data.length - 1; dataIndex++) {
+      const next = this.data[dataIndex + 1];
+      if (next.x < xs[xsIndex]) {
+        continue;
+      }
+      const current = this.data[dataIndex];
+      if (next.x - current.x < 0) {
+        return;
+      }
+      while (xs[xsIndex] < next.x) {
+        ys.push(
+          current.y +
+            ((next.y - current.y) * (xs[xsIndex] - current.x)) /
+              (next.x - current.x)
+        );
+        xsIndex++;
+      }
+    }
+    return ys;
+  }
 }

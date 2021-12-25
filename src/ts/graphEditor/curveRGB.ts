@@ -143,17 +143,16 @@ export class CurveRGB {
     return NonePointId;
   }
   getWeight(size: number): rgbWeight | undefined {
-    if (
-      this._red instanceof Gaussian &&
-      this._green instanceof Gaussian &&
-      this._blue instanceof Gaussian
-    ) {
+    const r = this._red.getWeight(size);
+    const g = this._green.getWeight(size);
+    const b = this._blue.getWeight(size);
+    if (r != undefined && g != undefined && b != undefined) {
       return {
-        r: this._red.getWeight(size),
-        g: this._green.getWeight(size),
-        b: this._blue.getWeight(size),
+        r: r,
+        g: g,
+        b: b,
       };
-    }
+    } else return;
   }
 }
 

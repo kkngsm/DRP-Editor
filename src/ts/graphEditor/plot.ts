@@ -194,7 +194,7 @@ export class Plot {
       }
     }
   }
-  private reCalc() {
+  private reCalc(): void {
     const c = this[this.modeJudge()];
     if (c instanceof CurveRGB) {
       c.reCalc();
@@ -207,7 +207,10 @@ export class Plot {
   }
 
   getWeight(size: number): rgbWeight | undefined {
-    return this._gaussian?.getWeight(size);
+    const c = this[this.modeJudge()];
+    if (c instanceof CurveRGB) {
+      return c.getWeight(size);
+    }
   }
 
   get domElement(): HTMLCanvasElement {

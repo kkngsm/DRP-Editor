@@ -15,6 +15,7 @@ window.onload = () => {
   graph.addEventListener("mouseleave", () => plot.mouseLeave());
 
   const curveType = <HTMLSelectElement>document.getElementById("curveType");
+  curveType.value = "gaussian";
   curveType.addEventListener("change", () => {
     switch (curveType.value) {
       case "spline":
@@ -67,9 +68,19 @@ window.onload = () => {
     plot.draw();
     const kernelWeight = <rgbWeight>plot.getWeight(kernelSize);
     previewer.draw(kernelWeight, kernelSize);
-    colorramp.draw(kernelWeight, kernelSize);
+    // colorramp.draw(kernelWeight, kernelSize);
     displayCtx.drawImage(previewer.domElement, 0, 0);
-    displayCtx.drawImage(colorramp.domElement, 0, 200);
+    displayCtx.drawImage(
+      previewer.domElement,
+      250,
+      0,
+      kernelSize,
+      250,
+      0,
+      200,
+      500,
+      250
+    );
     requestAnimationFrame((time) => draw(time));
   }
 };
