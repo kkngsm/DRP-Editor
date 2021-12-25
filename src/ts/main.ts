@@ -9,6 +9,7 @@ import Previewer from "./preview/preview";
 
 window.onload = () => {
   const graph = <HTMLCanvasElement>document.getElementById("graph");
+
   graph.addEventListener("mousedown", () => plot.onDown());
   graph.addEventListener("mouseup", () => plot.draggOff());
   graph.addEventListener("mousemove", (e) => plot.onMove(e));
@@ -51,15 +52,10 @@ window.onload = () => {
   graphCtx.lineWidth = 2;
   graphCtx.lineCap = "round";
   graphCtx.lineJoin = "round";
-  graphCtx.shadowOffsetX = 5;
-  graphCtx.shadowOffsetY = 5;
-  graphCtx.shadowColor = "rgb(200, 200, 200)";
-  graphCtx.shadowBlur = 5;
 
   const plot = new Plot(
     graph,
     new Vector2(500, 300),
-    new Vector2(20, 20),
     new Vector2(500 / kernelSize, 300),
     curveType.value as CurveType
   );
@@ -81,8 +77,8 @@ window.onload = () => {
     const kernelWeight = <rgbWeight>plot.getWeight(kernelSize);
     previewer.draw(kernelWeight, kernelSize);
     colorramp.draw(kernelWeight, kernelSize);
-    graphCtx.drawImage(previewer.domElement, 10, 10);
-    graphCtx.drawImage(colorramp.domElement, 10, 200);
+    // graphCtx.drawImage(previewer.domElement, 10, 10);
+    // graphCtx.drawImage(colorramp.domElement, 10, 200);
     requestAnimationFrame((time) => draw(time));
   }
 };

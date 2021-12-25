@@ -14,12 +14,11 @@ export class Point {
   /**
    * ポイントを描画する
    * @param ctx キャンバスの2dコンテキスト
-   * @param origin 原点の位置
    * @param scale 拡大率
    */
   draw(
     ctx: CanvasRenderingContext2D,
-    origin: Vector2,
+    size: Vector2,
     scale: Vector2,
     color: Color
   ) {
@@ -29,8 +28,8 @@ export class Point {
       ctx.fillStyle = "black";
     }
     ctx.fillRect(
-      origin.x + this.coord.x * scale.x - this._size / 2,
-      origin.y - this.coord.y * scale.y - this._size / 2,
+      this.coord.x * scale.x - this._size / 2,
+      size.y - this.coord.y * scale.y - this._size / 2,
       this._size,
       this._size
     );
@@ -103,17 +102,16 @@ export class Points {
   /**
    * 描画する
    * @param ctx 描画先の2dコンテキスト
-   * @param origin 原点
    * @param scale 拡大率
    */
   draw(
     ctx: CanvasRenderingContext2D,
-    origin: Vector2,
+    size: Vector2,
     scale: Vector2,
     color: Color
   ) {
     this.ps.forEach((e) => {
-      e.draw(ctx, origin, scale, color);
+      e.draw(ctx, size, scale, color);
     });
   }
   /**

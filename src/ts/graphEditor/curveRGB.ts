@@ -51,16 +51,11 @@ export class CurveRGB {
       }
     });
   }
-  draw(
-    ctx: CanvasRenderingContext2D,
-    origin: Vector2,
-    size: Vector2,
-    scale: Vector2
-  ) {
+  draw(ctx: CanvasRenderingContext2D, size: Vector2, scale: Vector2) {
     RGB.forEach((e) => {
       const curve = this[e];
       if (curve instanceof Spline2D || curve instanceof Gaussian) {
-        curve.draw(ctx, origin, size, scale);
+        curve.draw(ctx, size, scale);
       }
     });
   }
@@ -110,7 +105,7 @@ export class CurveRGB {
       RGB.map((e) => {
         const g = gaussianRGB[e];
         if (g instanceof Gaussian) {
-          const xs = [0, 0.6, 1.66, 3, 5].map((e) => e * g.sigma);
+          const xs = [0, 0.6, 1.66, 3, 5, 10].map((e) => e * g.sigma);
           const ys = xs.map((e) => g.calc(e));
           const ps = Points.create(xs, ys);
           const col = e.slice(1) as Color;

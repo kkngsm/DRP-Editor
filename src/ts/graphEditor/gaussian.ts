@@ -42,21 +42,16 @@ export default class Gaussian extends Curve {
   /**
    * 正規分布を描画する
    */
-  draw(
-    ctx: CanvasRenderingContext2D,
-    origin: Vector2,
-    size: Vector2,
-    scale: Vector2
-  ) {
+  draw(ctx: CanvasRenderingContext2D, size: Vector2, scale: Vector2) {
     ctx.strokeStyle = this.color ? this.color : "black";
     ctx.beginPath();
-    ctx.moveTo(origin.x, origin.y - this.calc(0) * scale.y);
+    ctx.moveTo(0, size.y - this.calc(0) * scale.y);
     const maxX = size.x / scale.x;
     for (let t = 0.1; t <= maxX; t += 0.1) {
-      ctx.lineTo(origin.x + t * scale.x, origin.y - this.calc(t) * scale.y);
+      ctx.lineTo(0 + t * scale.x, size.y - this.calc(t) * scale.y);
     }
     ctx.stroke();
-    this._ps.draw(ctx, origin, scale, this.color);
+    this._ps.draw(ctx, size, scale, this.color);
   }
   get sigma() {
     return this._sigma;

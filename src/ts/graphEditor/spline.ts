@@ -79,6 +79,7 @@ export class SplineAxis {
 export class Spline2D extends Curve {
   private x: SplineAxis;
   private y: SplineAxis;
+  private err: boolean;
   constructor(ps: Points, _color?: Color) {
     super(ps, _color);
     this.x = new SplineAxis(ps.xs);
@@ -87,33 +88,51 @@ export class Spline2D extends Curve {
   /**
    * 3次スプライン曲線を描画する
    * @param ctx 描画先の2Dコンテキスト
-   * @param origin 原点
    * @param scale 拡大率
    */
-  draw(
-    ctx: CanvasRenderingContext2D,
-    origin: Vector2,
-    size: Vector2,
-    scale: Vector2
-  ): void {
+  draw(ctx: CanvasRenderingContext2D, size: Vector2, scale: Vector2): void {
     ctx.strokeStyle = this.color ? this.color : "black";
     ctx.beginPath();
-    ctx.moveTo(
-      origin.x + this.x.calc(0) * scale.x,
-      origin.y - this.y.calc(0) * scale.y
-    );
-    const num = this.x.num;
-    for (let t = 0.1; t <= num; t += 0.1) {
-      ctx.lineTo(
-        origin.x + this.x.calc(t) * scale.x,
-        origin.y - this.y.calc(t) * scale.y
-      );
+    ctx.moveTo(0 + this.x.calc(0) * scale.x, size.y - this.y.calc(0) * scale.y);
+    const num = this.x.num - 0.15;
+    const prevX = -0.1;
+    for (let t = 0.15; t <= num; t += 0.15) {
+      const x = this.x.calc(t);
+      const y = this.y.calc(t);
+      // if (prevX >= x) {
+      //   this.err = true;
+      // }
+      ctx.lineTo(x * scale.x, size.y - y * scale.y);
     }
+    const prevPos = new Vector2(
+      this.x.calc(num + 0.1),
+      this.y.calc(num + 0.1)
+    ).multiply(scale);
+    const lastpos = new Vector2(
+      this.x.calc(num + 0.2),
+      this.y.calc(num + 0.2)
+    ).multiply(scale);
+
+    ctx.lineTo(prevPos.x, size.y - prevPos.y);
+
+    const diff = new Vector2().subVectors(lastpos, prevPos);
+    const remain = size.x - prevPos.x;
+
+    ctx.lineTo(size.x, size.y - (prevPos.y + (remain / diff.x) * diff.y));
+
     ctx.stroke();
-    this._ps.draw(ctx, origin, scale, this.color);
+    this._ps.draw(ctx, size, scale, this.color);
   }
   reCalc() {
     this.x.init(this._ps.xs);
     this.y.init(this._ps.ys);
   }
+  // getWeight(size: number) {
+  //   const unit = 1 / size;
+  //   const len = this.reslut.length;
+  //   for (let i = 0; i < len; i++){
+  //     const this.reslut
+  //   }
+  //   return;
+  // }
 }

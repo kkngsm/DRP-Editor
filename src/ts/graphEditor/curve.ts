@@ -12,7 +12,6 @@ export abstract class Curve {
   }
   abstract draw(
     ctx: CanvasRenderingContext2D,
-    origin: Vector2,
     size: Vector2,
     scale: Vector2
   ): void;

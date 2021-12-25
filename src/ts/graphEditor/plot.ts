@@ -13,13 +13,11 @@ export class Plot {
   constructor(
     private canvas: HTMLElement,
     private size: Vector2,
-    private origin: Vector2,
     public scale: Vector2,
     private _curve: CurveType,
     private _spline?: CurveRGB,
     private _gaussian?: CurveRGB
   ) {
-    this.origin = new Vector2(50, canvas.clientHeight - 50);
     this._draggingId = NonePointId;
     this._selectedId = NonePointId;
   }
@@ -53,10 +51,10 @@ export class Plot {
 
     switch (this._curve) {
       case "gaussian":
-        this._gaussian?.draw(ctx, this.origin, this.size, this.scale);
+        this._gaussian?.draw(ctx, this.size, this.scale);
         break;
       case "spline":
-        this._spline?.draw(ctx, this.origin, this.size, this.scale);
+        this._spline?.draw(ctx, this.size, this.scale);
         break;
     }
   }
@@ -66,13 +64,13 @@ export class Plot {
    * @param ctx 描画するキャンバスの2Dコンテキスト
    */
   private drawTick(ctx: CanvasRenderingContext2D) {
-    const top = this.origin.y - this.size.y;
-    const right = this.size.x + this.origin.x;
+    const top = this.size.y - this.size.y;
+    const right = this.size.x;
     ctx.beginPath();
     ctx.strokeStyle = "black";
-    ctx.moveTo(this.origin.x, top);
-    ctx.lineTo(this.origin.x, this.origin.y);
-    ctx.lineTo(right, this.origin.y);
+    ctx.moveTo(0, top);
+    ctx.lineTo(0, this.size.y);
+    ctx.lineTo(right, this.size.y);
 
     const unitX = 1;
     const unitY = 0.1;
@@ -81,14 +79,14 @@ export class Plot {
 
     const countX = this.size.x / canvasUnitX;
     for (let x = 0; x <= countX; x += 1) {
-      const fx = this.origin.x + Math.floor(x * canvasUnitX);
+      const fx = Math.floor(x * canvasUnitX);
       ctx.moveTo(fx, top);
-      ctx.lineTo(fx, this.origin.y);
+      ctx.lineTo(fx, this.size.y);
     }
     const countY = this.size.y / canvasUnitY;
     for (let y = 0; y <= countY; y += 1) {
-      const fy = this.origin.y - Math.floor(y * canvasUnitY);
-      ctx.moveTo(this.origin.x, fy);
+      const fy = this.size.y - Math.floor(y * canvasUnitY);
+      ctx.moveTo(0, fy);
       ctx.lineTo(right, fy);
     }
     ctx.stroke();
@@ -101,10 +99,7 @@ export class Plot {
    */
   private mouseHit() {
     if (!this._mousePos) return;
-    const m = new Vector2(
-      this._mousePos.x - this.origin.x,
-      this.origin.y - this._mousePos.y
-    );
+    const m = new Vector2(this._mousePos.x, this.size.y - this._mousePos.y);
     const c = this[this.modeJudge()];
     if (c instanceof CurveRGB) {
       this._selectedId = c.mouseHit(m, this.scale);
@@ -155,14 +150,11 @@ export class Plot {
    * @return [x軸で範囲内にあるかどうか, y軸で範囲内にあるかどうか]
    */
   contain(v: Vector2): { x: boolean; y: boolean } {
-    const edge = new Vector2(
-      this.origin.x + this.size.x,
-      this.origin.y - this.size.y
-    );
+    const edge = new Vector2(this.size.x, this.size.y - this.size.y);
 
     return {
-      x: this.origin.x < v.x && v.x < edge.x,
-      y: edge.y < v.y && v.y < this.origin.y,
+      x: 0 < v.x && v.x < edge.x,
+      y: edge.y < v.y && v.y < this.size.y,
     };
   }
   setScaleX(x: number) {
@@ -187,15 +179,12 @@ export class Plot {
       const c = this[this.modeJudge()];
       if (c instanceof CurveRGB) {
         if (x) {
-          c.setX(
-            this._draggingId,
-            (this._mousePos.x - this.origin.x) / this.scale.x
-          );
+          c.setX(this._draggingId, this._mousePos.x / this.scale.x);
         }
         if (y) {
           c.setY(
             this._draggingId,
-            (this.origin.y - this._mousePos.y) / this.scale.y
+            (this.size.y - this._mousePos.y) / this.scale.y
           );
         }
         this._draggingId = <PointId>c.sort(this._draggingId);
