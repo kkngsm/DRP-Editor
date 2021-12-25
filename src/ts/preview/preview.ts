@@ -1,51 +1,36 @@
 import {
   CanvasTexture,
-  GLSL3,
   IUniform,
   LinearFilter,
-  Mesh,
-  OrthographicCamera,
-  PlaneGeometry,
   RGBAFormat,
-  Scene,
-  ShaderMaterial,
   UnsignedByteType,
-  WebGLRenderer,
   WebGLRenderTarget,
 } from "three";
 import { rgbWeight } from "../graphEditor/curveRGB";
 import fs from "./glsl/sss.frag";
 import vs from "./glsl/vertexShader.vert";
+import Renderer from "./renderer";
 
-export default class Previewer {
-  private _renderer: WebGLRenderer;
-  private _uniforms: { [uniform: string]: IUniform };
-  private _scene: Scene;
-  private _camera: OrthographicCamera;
-  private _mesh: Mesh;
+export default class Previewer extends Renderer {
   private _rawImage: CanvasTexture;
   private _tempImage: WebGLRenderTarget;
   constructor(width: number, height: number) {
-    this._renderer = new WebGLRenderer();
-    this._renderer.setSize(width, height);
-
-    this._scene = new Scene();
-    this._camera = new OrthographicCamera(-0.5, 0.5, 0.5, -0.5, -10000, 10000);
-    this._camera.position.z = 100;
-    this._scene.add(this._camera);
-
-    const plane = new PlaneGeometry(1.0, 1.0);
-
-    this._uniforms = {
-      screenWidth: <IUniform>{ type: "f", value: width },
-      screenHeight: <IUniform>{ type: "f", value: height },
-      tex: <IUniform>{ type: "t", value: undefined },
-      horizontal: <IUniform>{ type: "b", value: true },
-      weightR: <IUniform>{ type: "fv1", value: undefined },
-      weightG: <IUniform>{ type: "fv1", value: undefined },
-      weightB: <IUniform>{ type: "fv1", value: undefined },
-      kernelSize: <IUniform>{ type: "i", value: undefined },
-    };
+    super(
+      width,
+      height,
+      {
+        screenWidth: <IUniform>{ type: "f", value: width },
+        screenHeight: <IUniform>{ type: "f", value: height },
+        tex: <IUniform>{ type: "t", value: undefined },
+        horizontal: <IUniform>{ type: "b", value: true },
+        weightR: <IUniform>{ type: "fv1", value: undefined },
+        weightG: <IUniform>{ type: "fv1", value: undefined },
+        weightB: <IUniform>{ type: "fv1", value: undefined },
+        kernelSize: <IUniform>{ type: "i", value: undefined },
+      },
+      vs,
+      fs
+    );
 
     this._rawImage = this.texture();
     this._tempImage = new WebGLRenderTarget(width, height, {
@@ -54,15 +39,6 @@ export default class Previewer {
       format: RGBAFormat,
       type: UnsignedByteType,
     });
-    const material = new ShaderMaterial({
-      uniforms: this._uniforms,
-      vertexShader: vs,
-      fragmentShader: fs,
-      glslVersion: GLSL3,
-    });
-
-    this._mesh = new Mesh(plane, material);
-    this._scene.add(this._mesh);
   }
   draw({ r, g, b }: rgbWeight, kernelSize: number) {
     this._uniforms.horizontal.value = true;
@@ -96,9 +72,5 @@ export default class Previewer {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width * 0.5, canvas.height);
     return new CanvasTexture(canvas);
-  }
-
-  get domElement(): HTMLCanvasElement {
-    return this._renderer.domElement;
   }
 }
