@@ -4,7 +4,9 @@ uniform float screenWidth;
 uniform float screenHeight;
 uniform sampler2D tex;
 uniform bool horizontal;
-uniform vec3 weight[13];
+uniform float weightR[13];
+uniform float weightG[13];
+uniform float weightB[13];
 uniform int kernelSize;
 
 void main(){
@@ -19,11 +21,11 @@ void main(){
 
   vec3 col = vec3(0);
 
-  col += texture(tex, fragCoord).xyz* vec3(weight[0].x,weight[0].y,weight[0].z);
+  col += texture(tex, fragCoord).xyz* vec3(weightR[0],weightG[0],weightB[0]);
 
   for(int i = 1; i < kernelSize; i++){
-    col += texture(tex, fragCoord+shift*float(i)).xyz * vec3(weight[i].x,weight[i].y,weight[i].z);
-    col += texture(tex, fragCoord-shift*float(i)).xyz * vec3(weight[i].x,weight[i].y,weight[i].z);
+    col += texture(tex, fragCoord+shift*float(i)).xyz * vec3(weightR[i],weightG[i],weightB[i]);
+    col += texture(tex, fragCoord-shift*float(i)).xyz * vec3(weightR[i],weightG[i],weightB[i]);
   }
   fragColor = vec4(col.xyz, 1.);
 }

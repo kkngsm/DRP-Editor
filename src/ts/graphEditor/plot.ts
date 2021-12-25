@@ -1,6 +1,6 @@
 import { Vector2 } from "three";
 import { CurveType } from "./curve";
-import { CurveRGB, NonePointId, PointId } from "./curveRGB";
+import { CurveRGB, NonePointId, PointId, rgbWeight } from "./curveRGB";
 import Gaussian from "./gaussian";
 import { Points } from "./point";
 import { Spline2D } from "./spline";
@@ -214,7 +214,7 @@ export class Plot {
       : ("_gaussian" as keyof Plot);
   }
 
-  getWeight(size: number): number[] | undefined {
+  getWeight(size: number): rgbWeight | undefined {
     return this._gaussian?.getWeight(size);
   }
 }

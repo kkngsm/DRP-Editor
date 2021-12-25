@@ -13,6 +13,7 @@ import {
   WebGLRenderer,
   WebGLRenderTarget,
 } from "three";
+import { rgbWeight } from "../graphEditor/curveRGB";
 import fs from "./glsl/sss.frag";
 import vs from "./glsl/vertexShader.vert";
 
@@ -40,7 +41,9 @@ export default class Previewer {
       screenHeight: <IUniform>{ type: "f", value: height },
       tex: <IUniform>{ type: "t", value: undefined },
       horizontal: <IUniform>{ type: "b", value: true },
-      weight: <IUniform>{ type: "fv", value: undefined },
+      weightR: <IUniform>{ type: "fv1", value: undefined },
+      weightG: <IUniform>{ type: "fv1", value: undefined },
+      weightB: <IUniform>{ type: "fv1", value: undefined },
       kernelSize: <IUniform>{ type: "i", value: undefined },
     };
 
@@ -61,10 +64,15 @@ export default class Previewer {
     this._mesh = new Mesh(plane, material);
     this._scene.add(this._mesh);
   }
-  draw(weight: number[], kernelSize: number) {
+  draw({ r, g, b }: rgbWeight, kernelSize: number) {
     this._uniforms.horizontal.value = true;
     this._uniforms.tex.value = this._rawImage;
-    this._uniforms.weight.value = weight;
+    const sumR = r.reduce((sum, e) => sum + e);
+    this._uniforms.weightR.value = r.map((e) => e / sumR);
+    const sumG = g.reduce((sum, e) => sum + e);
+    this._uniforms.weightG.value = g.map((e) => e / sumG);
+    const sumB = b.reduce((sum, e) => sum + e);
+    this._uniforms.weightB.value = b.map((e) => e / sumB);
     this._uniforms.kernelSize.value = kernelSize;
     this._renderer.setRenderTarget(this._tempImage);
     this._renderer.clear();

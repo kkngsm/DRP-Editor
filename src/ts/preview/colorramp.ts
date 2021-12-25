@@ -8,6 +8,7 @@ import {
   ShaderMaterial,
   WebGLRenderer,
 } from "three";
+import { rgbWeight } from "../graphEditor/curveRGB";
 import fs from "./glsl/colorramp.frag";
 import vs from "./glsl/vertexShader.vert";
 
@@ -30,7 +31,9 @@ export default class ColorRamp {
     this._uniforms = {
       screenWidth: <IUniform>{ type: "f", value: width },
       screenHeight: <IUniform>{ type: "f", value: height },
-      weight: <IUniform>{ type: "fv", value: undefined },
+      weightR: <IUniform>{ type: "fv1", value: undefined },
+      weightG: <IUniform>{ type: "fv1", value: undefined },
+      weightB: <IUniform>{ type: "fv1", value: undefined },
       kernelSize: <IUniform>{ type: "i", value: undefined },
     };
 
@@ -44,9 +47,11 @@ export default class ColorRamp {
     this._mesh = new Mesh(plane, material);
     this._scene.add(this._mesh);
   }
-  draw(weight: number[], kernelSize: number) {
-    this._uniforms.weight.value = weight;
+  draw({ r, g, b }: rgbWeight, kernelSize: number) {
     this._uniforms.kernelSize.value = kernelSize;
+    this._uniforms.weightR.value = r;
+    this._uniforms.weightG.value = g;
+    this._uniforms.weightB.value = b;
 
     this._renderer.setRenderTarget(null);
     this._renderer.clear();

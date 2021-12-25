@@ -1,6 +1,7 @@
 "use strict";
 import { Vector2 } from "three";
 import { CurveType } from "./graphEditor/curve";
+import { rgbWeight } from "./graphEditor/curveRGB";
 import Gaussian from "./graphEditor/gaussian";
 import { Plot } from "./graphEditor/plot";
 import ColorRamp from "./preview/colorramp";
@@ -77,7 +78,7 @@ window.onload = () => {
     then = now;
     // console.log(1 / deltaTime);
     plot.draw(graphCtx);
-    const kernelWeight = <number[]>plot.getWeight(kernelSize);
+    const kernelWeight = <rgbWeight>plot.getWeight(kernelSize);
     previewer.draw(kernelWeight, kernelSize);
     colorramp.draw(kernelWeight, kernelSize);
     graphCtx.drawImage(previewer.domElement, 10, 10);
