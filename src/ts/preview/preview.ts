@@ -12,7 +12,7 @@ import vs from "./glsl/vertexShader.vert";
 import Renderer from "./renderer";
 
 export default class Previewer extends Renderer {
-  private _rawImage: CanvasTexture;
+  private _rawImage: CanvasTexture | HTMLImageElement;
   private _tempImage: WebGLRenderTarget;
   constructor(width: number, height: number) {
     super(
@@ -32,7 +32,7 @@ export default class Previewer extends Renderer {
       fs
     );
 
-    this._rawImage = this.texture();
+    this._rawImage = this.texture(width, height);
     this._tempImage = new WebGLRenderTarget(width, height, {
       minFilter: LinearFilter,
       magFilter: LinearFilter,
@@ -43,12 +43,10 @@ export default class Previewer extends Renderer {
   draw({ r, g, b }: rgbWeight, kernelSize: number) {
     this._uniforms.horizontal.value = true;
     this._uniforms.tex.value = this._rawImage;
-    const sumR = r.reduce((sum, e) => sum + e);
-    this._uniforms.weightR.value = r.map((e) => e / sumR);
-    const sumG = g.reduce((sum, e) => sum + e);
-    this._uniforms.weightG.value = g.map((e) => e / sumG);
-    const sumB = b.reduce((sum, e) => sum + e);
-    this._uniforms.weightB.value = b.map((e) => e / sumB);
+
+    this._uniforms.weightR.value = this.kernelNormalized(r);
+    this._uniforms.weightG.value = this.kernelNormalized(g);
+    this._uniforms.weightB.value = this.kernelNormalized(b);
     this._uniforms.kernelSize.value = kernelSize;
     this._renderer.setRenderTarget(this._tempImage);
     this._renderer.clear();
@@ -60,17 +58,39 @@ export default class Previewer extends Renderer {
     this._renderer.clear();
     this._renderer.render(this._scene, this._camera);
   }
-  private texture(): CanvasTexture {
+  private kernelNormalized(v: number[]): number[] {
+    const sum = v.reduce((sum, e) => sum + e) * 2 - v[0];
+    return v.map((e) => e / sum);
+  }
+  private texture(width: number, height: number): CanvasTexture {
     const canvas = document.createElement("canvas");
-    canvas.width = 500;
-    canvas.height = 250;
+    canvas.width = width;
+    canvas.height = height;
 
     const ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
     ctx.fillStyle = "black";
-    ctx.fillRect(canvas.width * 0.5, 0, canvas.width, canvas.height);
+    ctx.fillRect(width * 0.5, 0, width, height);
 
     ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width * 0.5, canvas.height);
+    ctx.fillRect(0, 0, width * 0.5, height);
+    return new CanvasTexture(canvas);
+  }
+  setTexture(url: string) {
+    const img = new Image();
+    img.src = url;
+    const THIS = this;
+    img.onload = () => {
+      THIS._rawImage = new CanvasTexture(img);
+    };
+  }
+  private maskTex(width: number, height: number): CanvasTexture {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = <CanvasRenderingContext2D>canvas.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, width, height);
     return new CanvasTexture(canvas);
   }
 }
