@@ -51,8 +51,8 @@ window.onload = () => {
   const color = <HTMLInputElement>document.getElementById("color");
   color.addEventListener("input", resetGaussian);
 
-  const img = <HTMLInputElement>document.getElementById("img");
-  img.addEventListener(
+  const rawTex = <HTMLInputElement>document.getElementById("rawTex");
+  rawTex.addEventListener(
     "change",
     (e) => {
       // ファイル情報を取得
@@ -60,7 +60,7 @@ window.onload = () => {
         const fileData = (<FileList>(<HTMLInputElement>e.target).files)[0];
         const reader = new FileReader();
         reader.onload = function () {
-          previewer.setTexture(reader.result as string);
+          previewer.setRawTex(reader.result as string);
         };
         reader.readAsDataURL(fileData);
       }
@@ -68,6 +68,22 @@ window.onload = () => {
     false
   );
 
+  const maskTex = <HTMLInputElement>document.getElementById("maskTex");
+  maskTex.addEventListener(
+    "change",
+    (e) => {
+      // ファイル情報を取得
+      if (e.target instanceof EventTarget) {
+        const fileData = (<FileList>(<HTMLInputElement>e.target).files)[0];
+        const reader = new FileReader();
+        reader.onload = function () {
+          previewer.setMaskTex(reader.result as string);
+        };
+        reader.readAsDataURL(fileData);
+      }
+    },
+    false
+  );
   const previewer = new Previewer(216, 317);
   const colorramp = new ColorRamp(500, 100);
 

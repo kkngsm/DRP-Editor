@@ -12,7 +12,8 @@ import vs from "./glsl/vertexShader.vert";
 import Renderer from "./renderer";
 
 export default class Previewer extends Renderer {
-  private _rawImage: CanvasTexture | HTMLImageElement;
+  private _rawImage: CanvasTexture;
+  private _maskImage: CanvasTexture;
   private _tempImage: WebGLRenderTarget;
   constructor(width: number, height: number) {
     super(
@@ -21,7 +22,8 @@ export default class Previewer extends Renderer {
       {
         screenWidth: <IUniform>{ type: "f", value: width },
         screenHeight: <IUniform>{ type: "f", value: height },
-        tex: <IUniform>{ type: "t", value: undefined },
+        rawTex: <IUniform>{ type: "t", value: undefined },
+        maskTex: <IUniform>{ type: "t", value: undefined },
         horizontal: <IUniform>{ type: "b", value: true },
         weightR: <IUniform>{ type: "fv1", value: undefined },
         weightG: <IUniform>{ type: "fv1", value: undefined },
@@ -32,7 +34,8 @@ export default class Previewer extends Renderer {
       fs
     );
 
-    this._rawImage = this.texture(width, height);
+    this._rawImage = this.initRawTex(width, height);
+    this._maskImage = this.initMaskTex(width, height);
     this._tempImage = new WebGLRenderTarget(width, height, {
       minFilter: LinearFilter,
       magFilter: LinearFilter,
@@ -42,7 +45,8 @@ export default class Previewer extends Renderer {
   }
   draw({ r, g, b }: rgbWeight, kernelSize: number) {
     this._uniforms.horizontal.value = true;
-    this._uniforms.tex.value = this._rawImage;
+    this._uniforms.rawTex.value = this._rawImage;
+    this._uniforms.maskTex.value = this._maskImage;
 
     this._uniforms.weightR.value = this.kernelNormalized(r);
     this._uniforms.weightG.value = this.kernelNormalized(g);
@@ -53,16 +57,32 @@ export default class Previewer extends Renderer {
     this._renderer.render(this._scene, this._camera);
 
     this._uniforms.horizontal.value = false;
-    this._uniforms.tex.value = this._tempImage.texture;
+    this._uniforms.rawTex.value = this._tempImage.texture;
     this._renderer.setRenderTarget(null);
     this._renderer.clear();
     this._renderer.render(this._scene, this._camera);
+  }
+  setRawTex(url: string) {
+    const img = new Image();
+    img.src = url;
+    const THIS = this;
+    img.onload = () => {
+      THIS._rawImage = new CanvasTexture(img);
+    };
+  }
+  setMaskTex(url: string) {
+    const img = new Image();
+    img.src = url;
+    const THIS = this;
+    img.onload = () => {
+      THIS._maskImage = new CanvasTexture(img);
+    };
   }
   private kernelNormalized(v: number[]): number[] {
     const sum = v.reduce((sum, e) => sum + e) * 2 - v[0];
     return v.map((e) => e / sum);
   }
-  private texture(width: number, height: number): CanvasTexture {
+  private initRawTex(width: number, height: number): CanvasTexture {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
@@ -75,15 +95,8 @@ export default class Previewer extends Renderer {
     ctx.fillRect(0, 0, width * 0.5, height);
     return new CanvasTexture(canvas);
   }
-  setTexture(url: string) {
-    const img = new Image();
-    img.src = url;
-    const THIS = this;
-    img.onload = () => {
-      THIS._rawImage = new CanvasTexture(img);
-    };
-  }
-  private maskTex(width: number, height: number): CanvasTexture {
+
+  private initMaskTex(width: number, height: number): CanvasTexture {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;

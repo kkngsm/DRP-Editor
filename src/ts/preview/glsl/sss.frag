@@ -2,7 +2,8 @@ in vec2 fragCoord;
 layout (location = 0) out vec4 fragColor;
 uniform float screenWidth;
 uniform float screenHeight;
-uniform sampler2D tex;
+uniform sampler2D rawTex;
+uniform sampler2D maskTex;
 uniform bool horizontal;
 uniform float weightR[13];
 uniform float weightG[13];
@@ -20,12 +21,22 @@ void main(){
   }
 
   vec3 col = vec3(0);
-
-  col += texture(tex, fragCoord).xyz* vec3(weightR[0],weightG[0],weightB[0]);
+  vec3 centerCol = texture(rawTex, fragCoord).xyz;
+  col += centerCol* vec3(weightR[0],weightG[0],weightB[0]);
 
   for(int i = 1; i < kernelSize; i++){
-    col += texture(tex, fragCoord+shift*float(i)).xyz * vec3(weightR[i],weightG[i],weightB[i]);
-    col += texture(tex, fragCoord-shift*float(i)).xyz * vec3(weightR[i],weightG[i],weightB[i]);
+    vec2 pos = fragCoord+shift*float(i);
+    col += mix(
+      centerCol,
+      texture(rawTex, pos).xyz,
+      texture(maskTex, pos).x
+    ) * vec3(weightR[i],weightG[i],weightB[i]);
+    pos = fragCoord-shift*float(i);
+    col += mix(
+      centerCol,
+      texture(rawTex, pos).xyz,
+      texture(maskTex, pos).x
+    ) * vec3(weightR[i],weightG[i],weightB[i]);
   }
   fragColor = vec4(col.xyz, 1.);
 }
