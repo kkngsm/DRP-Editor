@@ -17,7 +17,8 @@
     "pug": "^3.0.2",
     "pug-loader": "^2.4.0",
     "raw-loader": "^4.0.2",
-    "sass": "^1.45.0",
+    "sass": "^1.49.0",
+    "sass-loader": "^12.4.0",
     "ts-loader": "^9.2.6",
     "typedoc": "^0.22.10",
     "typescript": "^4.5.4",
@@ -25,6 +26,8 @@
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
+    "css-loader": "^6.5.1",
+    "style-loader": "^3.3.1",
     "three": "^0.135.0"
   }
 }

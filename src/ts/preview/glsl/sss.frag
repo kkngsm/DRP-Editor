@@ -29,14 +29,18 @@ void main(){
     col += mix(
       centerCol,
       texture(rawTex, pos).xyz,
-      texture(maskTex, pos).x
+      1.
     ) * vec3(weightR[i],weightG[i],weightB[i]);
     pos = fragCoord-shift*float(i);
     col += mix(
       centerCol,
       texture(rawTex, pos).xyz,
-      texture(maskTex, pos).x
+      1.
     ) * vec3(weightR[i],weightG[i],weightB[i]);
   }
-  fragColor = vec4(col.xyz, 1.);
+  fragColor = vec4(mix(
+    centerCol,
+    col,
+    texture(maskTex, fragCoord).x
+  ), 1.);
 }

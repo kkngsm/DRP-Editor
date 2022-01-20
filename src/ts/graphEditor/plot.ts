@@ -20,7 +20,7 @@ export class Plot {
   ) {
     this.ctx = <CanvasRenderingContext2D>this.canvas.getContext("2d");
 
-    this.size = new Vector2(500, 300);
+    this.size = new Vector2(500, 250);
 
     this.ctx.lineWidth = 2;
     this.ctx.lineCap = "round";
@@ -56,6 +56,7 @@ export class Plot {
   draw() {
     this.ctx.clearRect(0, 0, this.size.x, this.size.y);
     this.drawTick();
+    this.ctx.setLineDash([]);
     switch (this._curve) {
       case "gaussian":
         this._gaussian?.draw(this.ctx, this.size);
@@ -75,23 +76,26 @@ export class Plot {
     const right = this.size.x;
     this.ctx.beginPath();
     this.ctx.strokeStyle = "black";
-    this.ctx.moveTo(0, top);
-    this.ctx.lineTo(0, this.size.y);
-    this.ctx.lineTo(right, this.size.y);
-
-    const unit = new Vector2().copy(this.size).divideScalar(this._kernelSize);
+    this.ctx.setLineDash([]);
+    this.ctx.strokeRect(0, 0, this.size.x, this.size.y);
+    // this.ctx.moveTo(0, top);
+    // this.ctx.lineTo(0, this.size.y);
+    // this.ctx.lineTo(right, this.size.y);
+    this.ctx.setLineDash([5, 2]);
+    const unit = new Vector2(this.size.x / this._kernelSize, this.size.x / 10);
     const countX = this.size.x / unit.x;
-    for (let x = 0; x <= countX; x += 1) {
+    for (let x = 1; x < countX; x++) {
       const fx = Math.floor(x * unit.x);
       this.ctx.moveTo(fx, top);
       this.ctx.lineTo(fx, this.size.y);
     }
-    const countY = this.size.y / unit.y;
-    for (let y = 0; y <= countY; y += 1) {
-      const fy = this.size.y - Math.floor(y * unit.y);
-      this.ctx.moveTo(0, fy);
-      this.ctx.lineTo(right, fy);
-    }
+
+    // const countY = this.size.y / unit.y;
+    // for (let y = 1; y < countY; y++) {
+    //   const fy = this.size.y - Math.floor(y * unit.y);
+    //   this.ctx.moveTo(0, fy);
+    //   this.ctx.lineTo(right, fy);
+    // }
     this.ctx.stroke();
   }
 

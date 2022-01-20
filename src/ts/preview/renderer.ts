@@ -21,7 +21,7 @@ export default abstract class Renderer {
     vs: string,
     fs: string
   ) {
-    this._renderer = new WebGLRenderer();
+    this._renderer = new WebGLRenderer({ preserveDrawingBuffer: true });
     this._renderer.setSize(width, height);
     this._scene = new Scene();
     this._camera = new OrthographicCamera(-0.5, 0.5, 0.5, -0.5, -10000, 10000);

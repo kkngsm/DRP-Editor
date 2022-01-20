@@ -1,14 +1,13 @@
 "use strict";
+import "../sass/style.sass";
 import { CurveType } from "./graphEditor/curve";
 import { rgbWeight } from "./graphEditor/curveRGB";
 import Gaussian from "./graphEditor/gaussian";
 import { Plot } from "./graphEditor/plot";
 import { Point } from "./graphEditor/point";
-import ColorRamp from "./preview/colorramp";
 import Previewer from "./preview/preview";
 
 window.onload = () => {
-  const display = <HTMLCanvasElement>document.getElementById("display");
   const graph = <HTMLCanvasElement>document.getElementById("graph");
   graph.addEventListener("mousedown", () => plot.onDown());
   graph.addEventListener("mouseup", () => plot.draggOff());
@@ -47,10 +46,23 @@ window.onload = () => {
   });
 
   const distance = <HTMLInputElement>document.getElementById("distance");
-  distance.addEventListener("input", resetGaussian);
+  const dv = <HTMLDivElement>document.getElementById("distance-value");
+  distance.value = "0.3";
+  dv.innerText = distance.value;
+  distance.addEventListener("input", () => {
+    dv.innerText = distance.value;
+    resetGaussian();
+  });
   const color = <HTMLInputElement>document.getElementById("color");
-  color.addEventListener("input", resetGaussian);
-
+  const cv = <HTMLDivElement>document.getElementById("color-value");
+  color.value = "#D82602";
+  const rgb = colorcode2rgb(color.value).map((e) => Math.floor(e));
+  cv.innerText = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+  color.addEventListener("input", () => {
+    const rgb = colorcode2rgb(color.value).map((e) => Math.floor(e));
+    cv.innerText = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
+    resetGaussian();
+  });
   const rawTex = <HTMLInputElement>document.getElementById("rawTex");
   rawTex.addEventListener(
     "change",
@@ -60,7 +72,7 @@ window.onload = () => {
         const fileData = (<FileList>(<HTMLInputElement>e.target).files)[0];
         const reader = new FileReader();
         reader.onload = function () {
-          previewer.setRawTex(reader.result as string);
+          display.setRawTex(reader.result as string);
         };
         reader.readAsDataURL(fileData);
       }
@@ -77,55 +89,56 @@ window.onload = () => {
         const fileData = (<FileList>(<HTMLInputElement>e.target).files)[0];
         const reader = new FileReader();
         reader.onload = function () {
-          previewer.setMaskTex(reader.result as string);
+          display.setMaskTex(reader.result as string);
         };
         reader.readAsDataURL(fileData);
       }
     },
     false
   );
-  const previewer = new Previewer(216, 317);
-  const colorramp = new ColorRamp(500, 100);
-
+  const display = new Previewer(1024, 1024);
+  const preview = new Previewer(500, 100);
+  document.getElementById("preview")?.appendChild(preview.domElement);
+  document.getElementById("display")?.appendChild(display.domElement);
   const plot = new Plot(graph, kernelSize, curveType.value as CurveType);
   resetGaussian();
   let then = 0;
-  const displayCtx = <CanvasRenderingContext2D>display.getContext("2d");
   draw(0);
   function draw(now: number) {
     now *= 0.001;
     const deltaTime = now - then; // compute time since last frame
     then = now;
-    // console.log(1 / deltaTime);
     plot.draw();
     const kernelWeight = <rgbWeight>plot.getWeight(kernelSize);
-    previewer.draw(kernelWeight, kernelSize);
-    // colorramp.draw(kernelWeight, kernelSize);
-    displayCtx.drawImage(previewer.domElement, 0, 0);
-    // displayCtx.drawImage(
-    //   previewer.domElement,
-    //   250,
-    //   0,
-    //   kernelSize,
-    //   250,
-    //   0,
-    //   200,
-    //   500,
-    //   250
-    // );
+    display.draw(kernelWeight, kernelSize);
+    preview.draw(kernelWeight, kernelSize);
+
     requestAnimationFrame((time) => draw(time));
   }
   function resetGaussian() {
     const x = Number(distance.value);
-    const ys: number[] = [
-      parseInt(color.value.substring(1, 3), 16) / 255,
-      parseInt(color.value.substring(3, 5), 16) / 255,
-      parseInt(color.value.substring(5, 7), 16) / 255,
-    ];
+    const ys = colorcode2rgb(color.value).map((e) => e / 255);
     plot.setGausssian(
       new Gaussian(new Point(x, ys[0])),
       new Gaussian(new Point(x, ys[1])),
       new Gaussian(new Point(x, ys[2]))
     );
   }
+  function colorcode2rgb(code: string): number[] {
+    return [
+      parseInt(code.substring(1, 3), 16),
+      parseInt(code.substring(3, 5), 16),
+      parseInt(code.substring(5, 7), 16),
+    ];
+  }
+  // function setMaskTex(e: HTMLInputElement) {
+  //   const files = <FileList>e.files;
+  //   if (files.length > 0) {
+  //     const reader = new FileReader();
+  //     reader.onload = function () {
+  //       display.setMaskTex(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(files[0]);
+  //   }
+  // }
 };
