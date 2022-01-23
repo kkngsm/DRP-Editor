@@ -18,15 +18,16 @@ export class Plot {
     private _kernelSize: number,
     private _curve: CurveType
   ) {
-    this.ctx = <CanvasRenderingContext2D>this.canvas.getContext("2d");
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
 
-    this.size = new Vector2(500, 250);
+    this.size = new Vector2(canvas.width, canvas.height);
+
+    this.ctx = <CanvasRenderingContext2D>this.canvas.getContext("2d");
 
     this.ctx.lineWidth = 2;
     this.ctx.lineCap = "round";
     this.ctx.lineJoin = "round";
-    this.canvas.width = this.size.x;
-    this.canvas.height = this.size.y;
 
     this._draggingId = NonePointId;
     this._selectedId = NonePointId;
@@ -215,9 +216,5 @@ export class Plot {
     if (c instanceof CurveRGB) {
       return c.getWeight(size);
     }
-  }
-
-  get domElement(): HTMLCanvasElement {
-    return this.canvas;
   }
 }

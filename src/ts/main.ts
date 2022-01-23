@@ -46,23 +46,18 @@ window.onload = () => {
   });
 
   const distance = <HTMLInputElement>document.getElementById("distance");
-  const dv = <HTMLDivElement>document.getElementById("distance-value");
   distance.value = "0.3";
-  dv.innerText = distance.value;
   distance.addEventListener("input", () => {
-    dv.innerText = distance.value;
     resetGaussian();
+    color.style.left =
+      (Number(distance.value) * graph.clientWidth).toString() + "px";
   });
   const color = <HTMLInputElement>document.getElementById("color");
-  const cv = <HTMLDivElement>document.getElementById("color-value");
   color.value = "#D82602";
-  const rgb = colorcode2rgb(color.value).map((e) => Math.floor(e));
-  cv.innerText = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-  color.addEventListener("input", () => {
-    const rgb = colorcode2rgb(color.value).map((e) => Math.floor(e));
-    cv.innerText = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
-    resetGaussian();
-  });
+  color.style.left = (0.3 * graph.clientWidth).toString() + "px";
+  // const rgb = colorcode2rgb(color.value).map((e) => Math.floor(e));
+  color.addEventListener("input", resetGaussian);
+
   const rawTex = <HTMLInputElement>document.getElementById("rawTex");
   rawTex.addEventListener(
     "change",
@@ -72,7 +67,7 @@ window.onload = () => {
         const fileData = (<FileList>(<HTMLInputElement>e.target).files)[0];
         const reader = new FileReader();
         reader.onload = function () {
-          display.setRawTex(reader.result as string);
+          result.setRawTex(reader.result as string);
         };
         reader.readAsDataURL(fileData);
       }
@@ -89,17 +84,15 @@ window.onload = () => {
         const fileData = (<FileList>(<HTMLInputElement>e.target).files)[0];
         const reader = new FileReader();
         reader.onload = function () {
-          display.setMaskTex(reader.result as string);
+          result.setMaskTex(reader.result as string);
         };
         reader.readAsDataURL(fileData);
       }
     },
     false
   );
-  const display = new Previewer(1024, 1024);
-  const preview = new Previewer(500, 100);
-  document.getElementById("preview")?.appendChild(preview.domElement);
-  document.getElementById("display")?.appendChild(display.domElement);
+  const result = new Previewer("result");
+  const preview = new Previewer("preview");
   const plot = new Plot(graph, kernelSize, curveType.value as CurveType);
   resetGaussian();
   let then = 0;
@@ -110,7 +103,7 @@ window.onload = () => {
     then = now;
     plot.draw();
     const kernelWeight = <rgbWeight>plot.getWeight(kernelSize);
-    display.draw(kernelWeight, kernelSize);
+    result.draw(kernelWeight, kernelSize);
     preview.draw(kernelWeight, kernelSize);
 
     requestAnimationFrame((time) => draw(time));
@@ -136,7 +129,7 @@ window.onload = () => {
   //   if (files.length > 0) {
   //     const reader = new FileReader();
   //     reader.onload = function () {
-  //       display.setMaskTex(reader.result as string);
+  //       result.setMaskTex(reader.result as string);
   //     };
   //     reader.readAsDataURL(files[0]);
   //   }

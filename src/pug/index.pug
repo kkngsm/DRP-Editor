@@ -6,16 +6,15 @@ html
     meta(name='description' content='DRP(diffuse reflectance profile) editor for subsurface scattering')
     script(src="main.js" type="module") 
   body
-    h1 RDP Editor
     div#grid
-      canvas#display
+      nav
+        h1 RDP Editor
+      canvas#result
       canvas#preview
       div#inputs
         canvas#graph
         input#distance(type="range" min="0" max="1" step="0.01")
-        div#distance-value
         input#color(type="color")
-        div#color-value
       ul#setting
         li 
           label 曲線タイプ
