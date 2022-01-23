@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-this-alias */
 import {
   CanvasTexture,
   GLSL3,
@@ -19,29 +18,30 @@ import fs from "./glsl/sss.frag";
 import vs from "./glsl/vertexShader.vert";
 
 export default class Previewer {
-  private _rawImage: CanvasTexture;
-  private _maskImage: CanvasTexture;
-  private _tempImage: WebGLRenderTarget;
-  private _renderer: WebGLRenderer;
-  private _camera: OrthographicCamera;
-  private _scene: Scene;
-  private _uniforms: { [uniform: string]: IUniform };
+  private canvas: HTMLCanvasElement;
+  private rawImage: CanvasTexture;
+  private maskImage: CanvasTexture;
+  private tempImage: WebGLRenderTarget;
+  private renderer: WebGLRenderer;
+  private camera: OrthographicCamera;
+  private scene: Scene;
+  private uniforms: { [uniform: string]: IUniform };
 
   constructor(id: string) {
-    const canvas = <HTMLCanvasElement>document.getElementById(id);
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
-    this._renderer = new WebGLRenderer({
-      canvas: canvas,
+    this.canvas = <HTMLCanvasElement>document.getElementById(id);
+    this.canvas.width = this.canvas.clientWidth;
+    this.canvas.height = this.canvas.clientHeight;
+    this.renderer = new WebGLRenderer({
+      canvas: this.canvas,
       preserveDrawingBuffer: true,
     });
-    this._scene = new Scene();
-    this._camera = new OrthographicCamera(-0.5, 0.5, 0.5, -0.5, -10000, 10000);
-    this._camera.position.z = 100;
-    this._scene.add(this._camera);
+    this.scene = new Scene();
+    this.camera = new OrthographicCamera(-0.5, 0.5, 0.5, -0.5, -10000, 10000);
+    this.camera.position.z = 100;
+    this.scene.add(this.camera);
 
-    const { width, height } = canvas;
-    this._uniforms = {
+    const { width, height } = this.canvas;
+    this.uniforms = {
       screenWidth: <IUniform>{ type: "f", value: width },
       screenHeight: <IUniform>{ type: "f", value: height },
       rawTex: <IUniform>{ type: "t", value: undefined },
@@ -54,7 +54,7 @@ export default class Previewer {
     };
 
     const material = new ShaderMaterial({
-      uniforms: this._uniforms,
+      uniforms: this.uniforms,
       vertexShader: vs,
       fragmentShader: fs,
       glslVersion: GLSL3,
@@ -62,11 +62,11 @@ export default class Previewer {
 
     const plane = new PlaneGeometry(1.0, 1.0);
     const mesh = new Mesh(plane, material);
-    this._scene.add(mesh);
+    this.scene.add(mesh);
 
-    this._rawImage = this.initRawTex(width, height);
-    this._maskImage = this.initMaskTex(width, height);
-    this._tempImage = new WebGLRenderTarget(width, height, {
+    this.rawImage = this.initRawTex(width, height);
+    this.maskImage = this.initMaskTex(width, height);
+    this.tempImage = new WebGLRenderTarget(width, height, {
       minFilter: LinearFilter,
       magFilter: LinearFilter,
       format: RGBAFormat,
@@ -74,38 +74,52 @@ export default class Previewer {
     });
   }
   draw({ r, g, b }: rgbWeight, kernelSize: number) {
-    this._uniforms.horizontal.value = true;
-    this._uniforms.rawTex.value = this._rawImage;
-    this._uniforms.maskTex.value = this._maskImage;
+    this.uniforms.horizontal.value = true;
+    this.uniforms.rawTex.value = this.rawImage;
+    this.uniforms.maskTex.value = this.maskImage;
 
-    this._uniforms.weightR.value = this.kernelNormalized(r);
-    this._uniforms.weightG.value = this.kernelNormalized(g);
-    this._uniforms.weightB.value = this.kernelNormalized(b);
-    this._uniforms.kernelSize.value = kernelSize;
-    this._renderer.setRenderTarget(this._tempImage);
-    this._renderer.clear();
-    this._renderer.render(this._scene, this._camera);
+    this.uniforms.weightR.value = this.kernelNormalized(r);
+    this.uniforms.weightG.value = this.kernelNormalized(g);
+    this.uniforms.weightB.value = this.kernelNormalized(b);
+    this.uniforms.kernelSize.value = kernelSize;
+    this.renderer.setRenderTarget(this.tempImage);
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
 
-    this._uniforms.horizontal.value = false;
-    this._uniforms.rawTex.value = this._tempImage.texture;
-    this._renderer.setRenderTarget(null);
-    this._renderer.clear();
-    this._renderer.render(this._scene, this._camera);
+    this.uniforms.horizontal.value = false;
+    this.uniforms.rawTex.value = this.tempImage.texture;
+    this.renderer.setRenderTarget(null);
+    this.renderer.clear();
+    this.renderer.render(this.scene, this.camera);
   }
   setRawTex(url: string) {
     const img = new Image();
     img.src = url;
-    const THIS = this;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
     img.onload = () => {
-      THIS._rawImage = new CanvasTexture(img);
+      that.rawImage = new CanvasTexture(img);
+      const { width, height } = img;
+      const { clientWidth, clientHeight } = this.canvas;
+      this.resize(width, height);
+      if (width <= height) {
+        this.canvas.style.width =
+          ((clientHeight * width) / height).toString() + "px";
+        this.canvas.style.height = clientHeight.toString() + "px";
+      } else {
+        this.canvas.style.width = clientWidth.toString() + "px";
+        this.canvas.style.height =
+          ((clientWidth * height) / width).toString() + "px";
+      }
     };
   }
   setMaskTex(url: string) {
     const img = new Image();
     img.src = url;
-    const THIS = this;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this;
     img.onload = () => {
-      THIS._maskImage = new CanvasTexture(img);
+      that.maskImage = new CanvasTexture(img);
     };
   }
   private kernelNormalized(v: number[]): number[] {
@@ -135,5 +149,10 @@ export default class Previewer {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, width, height);
     return new CanvasTexture(canvas);
+  }
+  private resize(width: number, height: number) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    this.renderer.setSize(width, height);
   }
 }

@@ -55,7 +55,6 @@ window.onload = () => {
   const color = <HTMLInputElement>document.getElementById("color");
   color.value = "#D82602";
   color.style.left = (0.3 * graph.clientWidth).toString() + "px";
-  // const rgb = colorcode2rgb(color.value).map((e) => Math.floor(e));
   color.addEventListener("input", resetGaussian);
 
   const rawTex = <HTMLInputElement>document.getElementById("rawTex");
@@ -124,14 +123,4 @@ window.onload = () => {
       parseInt(code.substring(5, 7), 16),
     ];
   }
-  // function setMaskTex(e: HTMLInputElement) {
-  //   const files = <FileList>e.files;
-  //   if (files.length > 0) {
-  //     const reader = new FileReader();
-  //     reader.onload = function () {
-  //       result.setMaskTex(reader.result as string);
-  //     };
-  //     reader.readAsDataURL(files[0]);
-  //   }
-  // }
 };
