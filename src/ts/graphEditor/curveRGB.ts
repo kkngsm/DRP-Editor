@@ -142,17 +142,15 @@ export class CurveRGB {
     }
     return NonePointId;
   }
-  getWeight(size: number): rgbWeight | undefined {
+  getWeight(size: number): rgbWeight {
     const r = this._red.getWeight(size);
     const g = this._green.getWeight(size);
     const b = this._blue.getWeight(size);
-    if (r != undefined && g != undefined && b != undefined) {
-      return {
-        r: r,
-        g: g,
-        b: b,
-      };
-    } else return;
+    return {
+      r,
+      g,
+      b,
+    };
   }
 }
 

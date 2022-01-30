@@ -77,7 +77,6 @@ export default class Previewer {
     this.uniforms.horizontal.value = true;
     this.uniforms.rawTex.value = this.rawImage;
     this.uniforms.maskTex.value = this.maskImage;
-
     this.uniforms.weightR.value = this.kernelNormalized(r);
     this.uniforms.weightG.value = this.kernelNormalized(g);
     this.uniforms.weightB.value = this.kernelNormalized(b);

@@ -211,10 +211,11 @@ export class Plot {
       : ("_gaussian" as keyof Plot);
   }
 
-  getWeight(size: number): rgbWeight | undefined {
-    const c = this[this.modeJudge()];
-    if (c instanceof CurveRGB) {
-      return c.getWeight(size);
+  getWeight(size: number): rgbWeight {
+    if (this._curve == "spline") {
+      return <rgbWeight>this._spline?.getWeight(size);
+    } else {
+      return <rgbWeight>this._gaussian?.getWeight(size);
     }
   }
 }

@@ -12,7 +12,7 @@ export abstract class Curve {
   }
   abstract draw(ctx: CanvasRenderingContext2D, size: Vector2): void;
   abstract reCalc(): void;
-
+  abstract getWeight(size: number): number[];
   /**
    * index番目の座標を設定する
    * @param index
